@@ -34,6 +34,7 @@ namespace NuJournalPro.Models
         public DateTime? Modified { get; set; }
 
         public PostStatus PostStatus { get; set; } = PostStatus.Draft;
+        public PostVisibility PostVisibility { get; set; } = PostVisibility.Public;
         public string? Slug { get; set; }
 
         [Display(Name = "Image")]
@@ -45,7 +46,7 @@ namespace NuJournalPro.Models
         // Database Navigation Properties
         public virtual Blog? Blog { get; set; }
         public virtual NuJournalUser? NuJournalUser { get; set; }
-        public virtual ICollection<Tag> Tags { get; set} = new HashSet<Tag>();
+        public virtual ICollection<Tag> Tags { get; set; } = new HashSet<Tag>();
         public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
     }
 }
