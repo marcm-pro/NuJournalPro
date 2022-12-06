@@ -4,7 +4,7 @@ using NuJournalPro.Models;
 
 namespace NuJournalPro.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<NuJournalUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
