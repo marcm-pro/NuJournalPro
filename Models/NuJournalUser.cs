@@ -10,7 +10,7 @@ namespace NuJournalPro.Models
         [Required]
         [Display(Name = "First Name")]
         [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-        public string? FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [Display(Name = "Middle Name")]
         [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
@@ -19,7 +19,7 @@ namespace NuJournalPro.Models
         [Required]
         [Display(Name = "Last Name")]
         [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-        public string? LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [NotMapped]
         public string FullName
@@ -34,7 +34,7 @@ namespace NuJournalPro.Models
         [Required]
         [Display(Name = "Display Name")]
         [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-        public string? DisplayName { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
 
         // User Join - Date and Time
         [Display(Name = "Joined")]

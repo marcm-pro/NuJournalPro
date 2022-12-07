@@ -11,7 +11,7 @@ namespace NuJournalPro.Models
         [Required]
         [Display(Name = "Tag")]
         [StringLength(64, ErrorMessage = "The {0} must be at least {2} and at most {1} characters long.", MinimumLength = 2)]
-        public string? Text { get; set; }
+        public string Text { get; set; } = string.Empty;
 
         // Database Navigation Properties
         public virtual Post? Post { get; set; }

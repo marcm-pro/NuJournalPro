@@ -13,7 +13,7 @@ namespace NuJournalPro.Models
         [Required]
         [Display(Name = "Comment")]
         [StringLength(8192, ErrorMessage = "The {0} must be at least {2} and at most {1} characters long.", MinimumLength = 2)]
-        public string? Body { get; set; }
+        public string Body { get; set; } = string.Empty;
 
         [Display(Name = "Created")]
         [DataType(DataType.DateTime)]
