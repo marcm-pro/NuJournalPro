@@ -1,0 +1,79 @@
+﻿@model NuJournalPro.Models.Comment
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Comment</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="PostId" class="control-label"></label>
+                <select asp-for="PostId" class="form-control" asp-items="ViewBag.PostId"></select>
+                <span asp-validation-for="PostId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NuJournalUserId" class="control-label"></label>
+                <select asp-for="NuJournalUserId" class="form-control" asp-items="ViewBag.NuJournalUserId"></select>
+                <span asp-validation-for="NuJournalUserId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ModeratorUserId" class="control-label"></label>
+                <select asp-for="ModeratorUserId" class="form-control" asp-items="ViewBag.ModeratorUserId"></select>
+                <span asp-validation-for="ModeratorUserId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Body" class="control-label"></label>
+                <input asp-for="Body" class="form-control" />
+                <span asp-validation-for="Body" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Created" class="control-label"></label>
+                <input asp-for="Created" class="form-control" />
+                <span asp-validation-for="Created" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Edited" class="control-label"></label>
+                <input asp-for="Edited" class="form-control" />
+                <span asp-validation-for="Edited" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Moderated" class="control-label"></label>
+                <input asp-for="Moderated" class="form-control" />
+                <span asp-validation-for="Moderated" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Deleted" class="control-label"></label>
+                <input asp-for="Deleted" class="form-control" />
+                <span asp-validation-for="Deleted" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ModeratedBody" class="control-label"></label>
+                <input asp-for="ModeratedBody" class="form-control" />
+                <span asp-validation-for="ModeratedBody" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ModerationType" class="control-label"></label>
+                <select asp-for="ModerationType" class="form-control"></select>
+                <span asp-validation-for="ModerationType" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
