@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NuJournalPro.Data;
+using NuJournalPro.Helpers;
 using NuJournalPro.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,10 @@ builder.Services.AddDefaultIdentity<NuJournalUser>(options => options.SignIn.Req
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+var scope = app.Services.CreateScope();
+
+// Perform a database update withe the latest migrations.
+await DataHelper.ManageDataAsync(scope.ServiceProvider);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
