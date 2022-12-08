@@ -12,7 +12,7 @@ using NuJournalPro.Data;
 namespace NuJournalPro.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20221207052500_001")]
+    [Migration("20221208215509_001")]
     partial class _001
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
