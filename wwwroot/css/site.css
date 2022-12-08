@@ -16,3 +16,7 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.input-group > .form-control {
+    height: calc(3.5rem + 2px);
+}

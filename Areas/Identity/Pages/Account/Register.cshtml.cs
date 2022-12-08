@@ -71,6 +71,25 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel
         {
+            [Required]
+            [Display(Name = "First Name")]
+            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+            public string FirstName { get; set; }
+
+            [Display(Name = "Middle Name")]
+            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+            public string MiddleName { get; set; }
+
+            [Required]
+            [Display(Name = "Last Name")]
+            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+            public string LastName { get; set; }
+
+            [Required]
+            [Display(Name = "Display Name")]
+            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+            public string DisplayName { get; set; }
+
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
@@ -159,7 +178,13 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
         {
             try
             {
-                return Activator.CreateInstance<NuJournalUser>();
+                NuJournalUser user = Activator.CreateInstance<NuJournalUser>();
+                user.FirstName = Input.FirstName;
+                user.MiddleName = Input.MiddleName;
+                user.LastName = Input.LastName;
+                user.DisplayName = Input.DisplayName;
+                return user;
+                //return Activator.CreateInstance<NuJournalUser>();
             }
             catch
             {

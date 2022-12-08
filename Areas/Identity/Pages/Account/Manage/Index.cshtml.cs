@@ -52,6 +52,25 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
         /// </summary>
         public class InputModel
         {
+            [Required]
+            [Display(Name = "First Name")]
+            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+            public string FirstName { get; set; }
+
+            [Display(Name = "Middle Name")]
+            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+            public string MiddleName { get; set; }
+
+            [Required]
+            [Display(Name = "Last Name")]
+            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+            public string LastName { get; set; }
+
+            [Required]
+            [Display(Name = "Display Name")]
+            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+            public string DisplayName { get; set; }
+
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
@@ -65,11 +84,19 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
         {
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+            var firstName = user.FirstName;
+            var middleName = user.MiddleName;
+            var lastName = user.LastName;
+            var displayName = user.DisplayName;
 
             Username = userName;
 
             Input = new InputModel
             {
+                FirstName = firstName,
+                MiddleName = middleName,
+                LastName = lastName,
+                DisplayName = displayName,
                 PhoneNumber = phoneNumber
             };
         }
@@ -98,6 +125,15 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             {
                 await LoadAsync(user);
                 return Page();
+            }
+
+            if (Input.FirstName != user.FirstName || Input.MiddleName != user.MiddleName || Input.LastName != user.LastName || Input.DisplayName != user.DisplayName)
+            {
+                user.FirstName = Input.FirstName;
+                user.MiddleName = Input.MiddleName;
+                user.LastName = Input.LastName;
+                user.DisplayName = Input.DisplayName;
+                await _userManager.UpdateAsync(user);
             }
 
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
