@@ -4,8 +4,8 @@ namespace NuJournalPro.Enums
 {
     public enum NuJournalUserRole
     {
-        [Description("Admnistrator")]
-        Admnistrator,
+        [Description("Administrator")]
+        Administrator,
         [Description("Contributor")]
         Contributor,
         [Description("Moderator")]

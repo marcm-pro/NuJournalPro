@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using NuJournalPro.Data;
-using NuJournalPro.Helpers;
 using NuJournalPro.Models;
 using NuJournalPro.Services;
 
@@ -21,21 +20,33 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 //builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 //    .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddDefaultIdentity<NuJournalUser>(options => options.SignIn.RequireConfirmedAccount = true)
+//builder.Services.AddDefaultIdentity<NuJournalUser>(options => options.SignIn.RequireConfirmedAccount = true)
+//                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddIdentity<NuJournalUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddDefaultUI()
+                .AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddRazorPages();
+
 // Register custom services.
 builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+builder.Services.AddScoped<DataService>();
+builder.Services.Configure<AdminSettings>(builder.Configuration.GetSection("AdminSettings"));
 
 var app = builder.Build();
-var scope = app.Services.CreateScope();
 
-// Perform a database update withe the latest migrations.
-await DataHelper.ManageDataAsync(scope.ServiceProvider);
+// Get the database update with the latest migrations.
+var dataService = app.Services.CreateScope().ServiceProvider.GetRequiredService<DataService>();
+await dataService.ManageDataAsync();
+////var scope = app.Services.CreateScope();
+////await DataHelper.ManageDataAsync(scope.ServiceProvider);
+////await InitRolesHelper.CreateUsersRolesAsync(scope.ServiceProvider);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
