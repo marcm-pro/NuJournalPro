@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NuJournalPro.Data;
 using NuJournalPro.Models;
 using NuJournalPro.Services;
+using NuJournalPro.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 //var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
@@ -34,6 +35,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 // Register custom services.
+builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddScoped<DataService>();
