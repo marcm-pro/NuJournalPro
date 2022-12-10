@@ -36,6 +36,7 @@ builder.Services.AddRazorPages();
 
 // Register custom services.
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ISlugService, BasicSlugService>();
 builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddScoped<DataService>();
