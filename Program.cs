@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using NuJournalPro.Data;
 using NuJournalPro.Models;
+using NuJournalPro.Models.ViewModels;
 using NuJournalPro.Services;
 using NuJournalPro.Services.Interfaces;
 
@@ -38,18 +39,17 @@ builder.Services.AddRazorPages();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<ISlugService, BasicSlugService>();
 builder.Services.AddScoped<IEmailSender, EmailService>();
+builder.Services.AddScoped<IContactEmailSender, ContactEmailSender>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+builder.Services.Configure<ContactUsSettings>(builder.Configuration.GetSection("ContactUsSettings"));
 builder.Services.AddScoped<DataService>();
 builder.Services.Configure<AdminSettings>(builder.Configuration.GetSection("AdminSettings"));
 
 var app = builder.Build();
 
-// Get the database update with the latest migrations.
+// Get the database update with the latest migrations and create an Administrator user if it doesn't already exist.
 var dataService = app.Services.CreateScope().ServiceProvider.GetRequiredService<DataService>();
 await dataService.ManageDataAsync();
-////var scope = app.Services.CreateScope();
-////await DataHelper.ManageDataAsync(scope.ServiceProvider);
-////await InitRolesHelper.CreateUsersRolesAsync(scope.ServiceProvider);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -18,36 +18,33 @@ namespace NuJournalPro.Services
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            var emailSender = _mailSettings.Email ?? Environment.GetEnvironmentVariable("Email");
+            var emailAccountHost = _mailSettings.Host ?? Environment.GetEnvironmentVariable("Host");
+            var emailServerPort = _mailSettings.Port != 0 ? _mailSettings.Port : int.Parse(Environment.GetEnvironmentVariable("Port")!);
+            var emailSenderAccount = _mailSettings.Email ?? Environment.GetEnvironmentVariable("Email");
+            var emailAccountPassword = _mailSettings.Password ?? Environment.GetEnvironmentVariable("Password");
+            var emailAccountReplyToName = _mailSettings.ReplyToName ?? Environment.GetEnvironmentVariable("ReplyToName");
+            var emailAccountReplyToEmail = _mailSettings.ReplyToEmail ?? Environment.GetEnvironmentVariable("ReplyToEmail");
 
-            var emailBody = new BodyBuilder
+            var emailMessage = new MimeMessage
             {
-                HtmlBody = htmlMessage
-            };
-
-            var newEmail = new MimeMessage
-            {
-                Sender = MailboxAddress.Parse(emailSender),
+                Sender = MailboxAddress.Parse(emailAccountReplyToEmail),
                 Subject = subject,
-                Body = emailBody.ToMessageBody()
+                Body = new BodyBuilder()
+                {
+                    HtmlBody = htmlMessage
+                }.ToMessageBody()
             };
 
-            foreach (var emailAddress in email.Split(";"))
-            {
-                newEmail.To.Add(MailboxAddress.Parse(emailAddress));
-            }
+            emailMessage.To.Add(MailboxAddress.Parse(email));
+            emailMessage.From.Add(new MailboxAddress(emailAccountReplyToName, emailAccountReplyToEmail));
+            emailMessage.ReplyTo.Add(MailboxAddress.Parse(emailAccountReplyToEmail));
 
             using SmtpClient smtpClient = new();
             try
             {
-                var host = _mailSettings.Host ?? Environment.GetEnvironmentVariable("Host");
-                var port = _mailSettings.Port != 0 ? _mailSettings.Port : int.Parse(Environment.GetEnvironmentVariable("Port")!);
-                var password = _mailSettings.Password ?? Environment.GetEnvironmentVariable("Password");
-
-                await smtpClient.ConnectAsync(host, port, SecureSocketOptions.Auto);
-                await smtpClient.AuthenticateAsync(emailSender, password);
-
-                await smtpClient.SendAsync(newEmail);
+                await smtpClient.ConnectAsync(emailAccountHost, emailServerPort, SecureSocketOptions.Auto);
+                await smtpClient.AuthenticateAsync(emailSenderAccount, emailAccountPassword);
+                await smtpClient.SendAsync(emailMessage);
                 await smtpClient.DisconnectAsync(true);
             }
             catch (Exception ex)
