@@ -4,41 +4,40 @@ namespace NuJournalPro.Services
 {
     public class ImageService : IImageService
     {
-        private readonly string[] suffixes = { "Bytes", "KB", "MB", "GB", "TB", "PB" };
-        private readonly string defaultImage = "~/img/DefaultUserImage.svg";
-        public string ConvertByteArrayToFile(byte[] fileData, string extension)
+        public string? DecodeImage(byte[] fileData, string mimeType)
         {
-            if (fileData != null)
+            if (fileData is null || mimeType is null)
             {
-                try
-                {
-                    string imageBase64Data = Convert.ToBase64String(fileData);
-                    return string.Format($"data:{extension};base64,{imageBase64Data}");
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                return null;
             }
             else
             {
-                return defaultImage;
+                return $"data:{mimeType};base64,{Convert.ToBase64String(fileData)}";
             }
         }
 
-        public async Task<byte[]> ConvertFileToByteArrayAsync(IFormFile file)
+        public async Task<byte[]?> EncodeImageAsync(IFormFile file)
         {
-            try
-            {
-                using MemoryStream memoryStream = new();
-                await file.CopyToAsync(memoryStream);
-                byte[] byteFile = memoryStream.ToArray();
-                return byteFile;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            if (file is null) return null;
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            return memoryStream.ToArray();
+        }
+
+        public async Task<byte[]> EncodeImageAsync(string fileName)
+        {
+            var file = $"{Directory.GetCurrentDirectory()}/wwwroot/resources/images/{fileName}";
+            return await File.ReadAllBytesAsync(file);
+        }
+
+        public int ImageSize(IFormFile file)
+        {
+            return Convert.ToInt32(file?.Length);
+        }
+
+        public string? MimeType(IFormFile file)
+        {
+            return file?.ContentType;
         }
     }
 }

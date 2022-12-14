@@ -2,7 +2,10 @@
 {
     public interface IImageService
     {
-        public Task<byte[]> ConvertFileToByteArrayAsync(IFormFile file);
-        public string ConvertByteArrayToFile(byte[] fileData, string extension);
+        Task<byte[]?> EncodeImageAsync(IFormFile file);
+        Task<byte[]> EncodeImageAsync(string fileName);
+        string? DecodeImage(byte[] fileData, string mimeType);
+        string? MimeType(IFormFile file);
+        int ImageSize(IFormFile file);
     }
 }
