@@ -10,43 +10,24 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="NuJournalUserId" class="control-label"></label>
-                <select asp-for="NuJournalUserId" class ="form-control" asp-items="ViewBag.NuJournalUserId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
+            <div class="form-floating">
                 <input asp-for="Name" class="form-control" />
+                <label asp-for="Name" class="form-label"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
+            <div class="form-floating">
+                <textarea asp-for="Description" class="form-control"></textarea>
+                <label asp-for="Description" class="form-label"></label>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Created" class="control-label"></label>
-                <input asp-for="Created" class="form-control" />
-                <span asp-validation-for="Created" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Modified" class="control-label"></label>
-                <input asp-for="Modified" class="form-control" />
-                <span asp-validation-for="Modified" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ImageData" class="control-label"></label>
-                <input asp-for="ImageData" class="form-control" />
+            <div class="form-floating">
+                <input type="file" asp-for="ImageFile" class="form-control" />
+                <label asp-for="ImageData" class="form-label" accept=".jpg,.jpeg,.svg,.png,.gif"></label>
                 <span asp-validation-for="ImageData" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="MimeType" class="control-label"></label>
-                <input asp-for="MimeType" class="form-control" />
-                <span asp-validation-for="MimeType" class="text-danger"></span>
-            </div>
-            <div class="form-group">
+            <div class="form-floating">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
@@ -58,5 +39,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

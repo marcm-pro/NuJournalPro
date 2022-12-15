@@ -58,7 +58,6 @@ namespace NuJournalPro.Controllers
         [Authorize]
         public IActionResult Create()
         {
-            ViewData["NuJournalUserId"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
 
@@ -67,11 +66,11 @@ namespace NuJournalPro.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Description,Image")] Blog blog)
+        public async Task<IActionResult> Create([Bind("Name,Description,ImageFile")] Blog blog)
         {
             if (ModelState.IsValid)
             {
-                blog.Created = DateTime.Now;
+                //blog.Created = DateTime.Now;
                 blog.NuJournalUserId = _nuJournalUser.GetUserId(User);
                 blog.ImageData = await _imageService.EncodeImageAsync(blog.ImageFile!);
                 blog.MimeType = _imageService.MimeType(blog.ImageFile!);
@@ -97,7 +96,7 @@ namespace NuJournalPro.Controllers
             {
                 return NotFound();
             }
-            ViewData["NuJournalUserId"] = new SelectList(_context.Users, "Id", "Id", blog.NuJournalUserId);
+            
             return View(blog);
         }
 
@@ -106,7 +105,7 @@ namespace NuJournalPro.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,NuJournalUserId,Name,Description,Created,Modified,ImageData,MimeType")] Blog blog)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,ImageFile")] Blog blog)
         {
             if (id != blog.Id)
             {

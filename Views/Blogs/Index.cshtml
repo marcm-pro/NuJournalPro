@@ -1,4 +1,6 @@
-﻿@model IEnumerable<NuJournalPro.Models.Blog>
+﻿@using NuJournalPro.Services.Interfaces
+@inject IImageService imageService
+@model IEnumerable<NuJournalPro.Models.Blog>
 
 @{
     ViewData["Title"] = "Index";
@@ -27,12 +29,6 @@
             <th>
                 @Html.DisplayNameFor(model => model.ImageData)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MimeType)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.NuJournalUser)
-            </th>
             <th></th>
         </tr>
     </thead>
@@ -52,13 +48,7 @@
                 @Html.DisplayFor(modelItem => item.Modified)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ImageData)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MimeType)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NuJournalUser.Id)
+                <img src="@imageService.DecodeImage(item.ImageData, item.MimeType)"/>
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
