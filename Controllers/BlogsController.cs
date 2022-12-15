@@ -73,8 +73,8 @@ namespace NuJournalPro.Controllers
             {
                 blog.Created = DateTime.Now;
                 blog.NuJournalUserId = _nuJournalUser.GetUserId(User);
-                blog.ImageData = await _imageService.EncodeImageAsync(file: blog.ImageFile);
-                blog.MimeType = _imageService.MimeType(blog.ImageFile);
+                blog.ImageData = await _imageService.EncodeImageAsync(blog.ImageFile!);
+                blog.MimeType = _imageService.MimeType(blog.ImageFile!);
 
                 _context.Add(blog);
                 await _context.SaveChangesAsync();
