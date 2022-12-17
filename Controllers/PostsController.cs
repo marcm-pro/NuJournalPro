@@ -7,16 +7,20 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NuJournalPro.Data;
 using NuJournalPro.Models;
+using NuJournalPro.Services.Interfaces;
 
 namespace NuJournalPro.Controllers
 {
     public class PostsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ISlugService _slugService;
 
-        public PostsController(ApplicationDbContext context)
+        public PostsController(ApplicationDbContext context,
+                               ISlugService slugService)
         {
             _context = context;
+            _slugService = slugService;
         }
 
         // GET: Posts
@@ -59,10 +63,21 @@ namespace NuJournalPro.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,BlogId,NuJournalUserId,Title,Abstract,Content,Created,Modified,PostStatus,PostVisibility,Slug,ImageData,MimeType")] Post post)
+        public async Task<IActionResult> Create([Bind("Id,BlogId,NuJournalUserId,Title,Abstract,Content,Created,Modified,PostStatus,PostVisibility,Slug,ImageData,MimeType")] Post post, List<string> tagValues)
         {
             if (ModelState.IsValid)
             {
+                // Create the slug and determine if it is unique.
+                var slug = _slugService.UrlFriendly(post.Title);
+                if (!_slugService.IsAvailable(slug))
+                {
+                    // Add a Model state error and return the user back to the Create View.
+                    ModelState.AddModelError("Title", "The title you entered cannot be used. Please enter a different title.");
+                    ViewData["TagValues"] = string.Join(",", tagValues);
+                    return View(post);
+                }
+                post.Slug = slug;
+                
                 _context.Add(post);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
