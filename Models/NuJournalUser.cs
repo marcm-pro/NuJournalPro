@@ -12,8 +12,8 @@ namespace NuJournalPro.Models
         [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
         public string FirstName { get; set; } = string.Empty;
 
-        [Display(Name = "Middle Name")]
-        [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+        [Display(Name = "Middle Name or Initial")]
+        [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 1)]
         public string? MiddleName { get; set; }
 
         [Required]
@@ -26,13 +26,24 @@ namespace NuJournalPro.Models
         {
             get
             {
-                return $"{FirstName} {MiddleName} {LastName}";
+                if (string.IsNullOrEmpty(MiddleName))
+                {
+                    return $"{FirstName} {LastName}";
+                }
+                else if (MiddleName.Length == 1)
+                {
+                    return $"{FirstName} {MiddleName}. {LastName}";
+                }
+                else
+                {
+                    return $"{FirstName} {MiddleName[0]}. {LastName}";
+                }
             }
         }
 
         // Public Display Name
         [Required]
-        [Display(Name = "Display Name")]
+        [Display(Name = "Public Display Name")]
         [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
         public string DisplayName { get; set; } = string.Empty;
 
@@ -45,31 +56,37 @@ namespace NuJournalPro.Models
         public byte[]? ImageData { get; set; }
         public string? MimeType { get; set; }
         [NotMapped]
-        IFormFile? ImageFile { get; set; }
+        public IFormFile? ImageFile { get; set; }
 
         // Social Media
         [Display(Name = "GitHub Repository")]
-        [StringLength(256, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]        
+        [StringLength(256, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+        [Url]
         public string? GitHubUrl { get; set; }
 
         [Display(Name = "Twitter Profile")]
         [StringLength(256, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+        [Url]
         public string? TwitterUrl { get; set; }
 
         [Display(Name = "LinkedIn Profile")]
-        [StringLength(256, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]        
+        [StringLength(256, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+        [Url]
         public string? LinkedInUrl { get; set; }
 
         [Display(Name = "YouTube Channel")]
         [StringLength(256, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+        [Url]
         public string? YouTubeUrl { get; set; }
 
         [Display(Name = "Facebook Profile")]
         [StringLength(256, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+        [Url]
         public string? FacebookUrl { get; set; }
 
         [Display(Name = "Instagram Profile")]
-        [StringLength(256, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]        
+        [StringLength(256, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+        [Url]
         public string? InstagramUrl { get; set; }
 
         // Database Navigation Properties

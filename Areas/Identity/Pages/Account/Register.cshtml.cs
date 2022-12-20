@@ -18,7 +18,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using NuJournalPro.Enums;
 using NuJournalPro.Models;
+using NuJournalPro.Services.Interfaces;
 
 namespace NuJournalPro.Areas.Identity.Pages.Account
 {
@@ -30,13 +33,17 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<NuJournalUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly IImageService _imageService;
+        private readonly DefaultUserSettings _defaultUserSettings;
 
         public RegisterModel(
             UserManager<NuJournalUser> userManager,
             IUserStore<NuJournalUser> userStore,
             SignInManager<NuJournalUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IImageService imageService,
+            IOptions<DefaultUserSettings> defaultUserSettings)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -44,6 +51,8 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _defaultUserSettings = defaultUserSettings.Value;
+            _imageService = imageService;
         }
 
         /// <summary>
@@ -77,7 +86,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
             public string FirstName { get; set; }
 
             [Display(Name = "Middle Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 1)]
             public string MiddleName { get; set; }
 
             [Required]
@@ -86,7 +95,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
             public string LastName { get; set; }
 
             [Required]
-            [Display(Name = "Display Name")]
+            [Display(Name = "Public Display Name")]
             [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
             public string DisplayName { get; set; }
 
@@ -136,11 +145,21 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                user.ImageData = await _imageService.EncodeImageAsync(_defaultUserSettings.Avatar);
+                user.MimeType = _imageService.MimeType(_defaultUserSettings.Avatar);
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+
+                    foreach (var userRole in Enum.GetNames(typeof(NuJournalUserRole)))
+                    {
+                        if (userRole == _defaultUserSettings.Role)
+                        {
+                            await _userManager.AddToRoleAsync(user, userRole);
+                        }
+                    }
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -182,7 +201,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
                 user.FirstName = Input.FirstName;
                 user.MiddleName = Input.MiddleName;
                 user.LastName = Input.LastName;
-                user.DisplayName = Input.DisplayName;
+                user.DisplayName = Input.DisplayName;                
                 return user;
                 //return Activator.CreateInstance<NuJournalUser>();
             }

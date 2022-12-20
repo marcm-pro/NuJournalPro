@@ -45,19 +45,25 @@
             <a asp-page="./Disable2fa" class="btn btn-primary">Disable 2FA</a>
             <a asp-page="./GenerateRecoveryCodes" class="btn btn-primary">Reset recovery codes</a>
             <div class="mt-4">
-                <hr class="hr hr-blurry" />
+                <hr />
             </div>
         }
 
         <h4>Authenticator app</h4>
         @if (!Model.HasAuthenticator)
         {
-            <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="btn btn-primary">Add authenticator app</a>
+            <div class="mt-4">
+                <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="w-75 btn btn-primary">Add authenticator app</a>
+            </div>
         }
         else
         {
-            <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="btn btn-primary">Set up authenticator app</a>
-            <a id="reset-authenticator" asp-page="./ResetAuthenticator" class="btn btn-primary">Reset authenticator app</a>
+            <div class="mt-4">
+                <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="w-75 btn btn-primary">Set up authenticator app</a>
+            </div>
+            <div class="mt-4">
+                <a id="reset-authenticator" asp-page="./ResetAuthenticator" class="w-75 btn btn-primary">Reset authenticator app</a>
+            </div>
         }
     }
     else

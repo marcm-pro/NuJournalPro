@@ -5,6 +5,7 @@ using NuJournalPro.Data;
 using NuJournalPro.Enums;
 using NuJournalPro.Models;
 using Microsoft.EntityFrameworkCore;
+using NuJournalPro.Services.Interfaces;
 
 namespace NuJournalPro.Services
 {
@@ -13,20 +14,26 @@ namespace NuJournalPro.Services
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<NuJournalUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly AdminSettings _adminSettings;
+        private readonly OwnerSettings _ownerSettings;
         private readonly IEmailSender _emailSender;
+        private readonly IImageService _imageService;
+        private readonly DefaultUserSettings _defaultUserSettings;
 
         public DataService(ApplicationDbContext dbContext,
                           UserManager<NuJournalUser> userManager,
                           RoleManager<IdentityRole> roleManager,
-                          IOptions<AdminSettings> adminSettings,
-                          IEmailSender emailSender)
+                          IOptions<OwnerSettings> ownerSettings,
+                          IEmailSender emailSender,
+                          IImageService imageService,
+                          IOptions<DefaultUserSettings> defaultUserSettings)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _roleManager = roleManager;
-            _adminSettings = adminSettings.Value;
+            _ownerSettings = ownerSettings.Value;
             _emailSender = emailSender;
+            _imageService = imageService;
+            _defaultUserSettings = defaultUserSettings.Value;
         }
 
         public async Task ManageDataAsync()
@@ -56,35 +63,37 @@ namespace NuJournalPro.Services
 
         private async Task CreateAdminUserAsync()
         {
-            var adminUser = new NuJournalUser()
+            var ownerUser = new NuJournalUser()
             {
-                Email = _adminSettings.Email ?? Environment.GetEnvironmentVariable("Email")!,
-                UserName = _adminSettings.Email ?? Environment.GetEnvironmentVariable("Email")!,
-                FirstName = _adminSettings.FirstName ?? Environment.GetEnvironmentVariable("FirstName")!,
-                MiddleName = _adminSettings.MiddleName ?? Environment.GetEnvironmentVariable("MiddleName")!,
-                LastName = _adminSettings.LastName ?? Environment.GetEnvironmentVariable("LastName")!,
-                DisplayName = _adminSettings.DisplayName ?? Environment.GetEnvironmentVariable("DisplayName")!,
+                Email = _ownerSettings.Email ?? Environment.GetEnvironmentVariable("Email")!,
+                UserName = _ownerSettings.Email ?? Environment.GetEnvironmentVariable("Email")!,
+                FirstName = _ownerSettings.FirstName ?? Environment.GetEnvironmentVariable("FirstName")!,
+                MiddleName = _ownerSettings.MiddleName ?? Environment.GetEnvironmentVariable("MiddleName")!,
+                LastName = _ownerSettings.LastName ?? Environment.GetEnvironmentVariable("LastName")!,
+                DisplayName = _ownerSettings.DisplayName ?? Environment.GetEnvironmentVariable("DisplayName")!,
+                ImageData = await _imageService.EncodeImageAsync(_defaultUserSettings.Avatar!),
+                MimeType = _imageService.MimeType(_defaultUserSettings.Avatar!),
                 EmailConfirmed = true
             };
 
-            var WarnAfterCreation = _adminSettings.WarnAfterCreation ?? Environment.GetEnvironmentVariable("WarnAfterCreation")!;
+            var warnAfterCreation = _ownerSettings.WarnAfterCreation ?? Environment.GetEnvironmentVariable("WarnAfterCreation")!;
 
-            var adminPassword = GenerateRandomPassword();
+            var ownerPassword = GenerateRandomPassword();
 
-            var creationResult = await _userManager.CreateAsync(adminUser, adminPassword);
+            var creationResult = await _userManager.CreateAsync(ownerUser, ownerPassword);
 
             if (creationResult.Succeeded)
             {
-                await _userManager.AddToRoleAsync(adminUser, NuJournalUserRole.Administrator.ToString());
-                await _emailSender.SendEmailAsync(_adminSettings.Email,
-                                                  $"Temporary password for the {adminUser.DisplayName} account.",
-                                                  $"<p>Your temporary <b>{adminUser.DisplayName}</b> account password is: <b>{adminPassword}</b></p><p>Please change your password after logging in.</p>");
+                await _userManager.AddToRoleAsync(ownerUser, NuJournalUserRole.Owner.ToString());
+                await _emailSender.SendEmailAsync(_ownerSettings.Email,
+                                                  $"Temporary password for the Owner ({ownerUser.DisplayName}) account",
+                                                  $"<p>Your temporary <b>{ownerUser.DisplayName}</b> account password is: <b>{ownerPassword}</b></p><p>Please change your password after logging in.</p>");
             }
-            else if (WarnAfterCreation.ToLower() == "y")
+            else if (warnAfterCreation.ToLower() == "y")
             {
-                await _emailSender.SendEmailAsync(_adminSettings.Email,
-                                                  $"{adminUser.DisplayName} account already exists.",
-                                                  $"<p>An account named <b>{adminUser.DisplayName}</b> with the registered <b>{adminUser.Email}</b> email address already exists.</p><p>Please try logging in or reseting your password.</p>");
+                await _emailSender.SendEmailAsync(_ownerSettings.Email,
+                                                  $"An Owner ({ownerUser.DisplayName}) account already exists",
+                                                  $"<p>An account named <b>{ownerUser.DisplayName}</b> with the registered <b>{ownerUser.Email}</b> email address already exists.</p><p>Please try logging in or reseting your password.</p>");
             }
         }
 

@@ -32,6 +32,8 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
         /// </summary>
         public string Username { get; set; }
 
+        public string UserRole { get; set; }
+
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -43,6 +45,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        /// 
         [BindProperty]
         public InputModel Input { get; set; }
 
@@ -58,7 +61,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             public string FirstName { get; set; }
 
             [Display(Name = "Middle Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
+            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 1)]
             public string MiddleName { get; set; }
 
             [Required]
@@ -67,7 +70,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             public string LastName { get; set; }
 
             [Required]
-            [Display(Name = "Display Name")]
+            [Display(Name = "Public Display Name")]
             [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
             public string DisplayName { get; set; }
 
@@ -89,7 +92,16 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             var lastName = user.LastName;
             var displayName = user.DisplayName;
 
+            if (middleName.Length == 1)
+            {
+                middleName = middleName + ".";
+            }
+
             Username = userName;
+
+            var userRole = await _userManager.GetRolesAsync(user);
+
+            UserRole = String.Join(", ", userRole);
 
             Input = new InputModel
             {

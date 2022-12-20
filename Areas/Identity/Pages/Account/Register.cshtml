@@ -4,55 +4,59 @@
     ViewData["Title"] = "Register";
 }
 
-<h1>@ViewData["Title"]</h1>
+<section class="wrapper bg-gray">
+    <div class="container pt-10 pb-14 pb-md-16">
+        <h1>@ViewData["Title"]</h1>
 
-<div class="row d-flex justify-content-center">
-    <div class="col-md-6">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr class="hr hr-blurry"/>
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-floating">
-                <input asp-for="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" />
-                <label asp-for="Input.FirstName"></label>
-                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+        <div class="row d-flex justify-content-center">
+            <div class="col-md-6">
+                <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <h2>Create a new account.</h2>
+                    <hr />
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-floating">
+                        <input asp-for="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" />
+                        <label asp-for="Input.FirstName"></label>
+                        <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mt-2">
+                        <input asp-for="Input.MiddleName" class="form-control" autocomplete="middlename" aria-required="false" />
+                        <label asp-for="Input.MiddleName"></label>
+                        <span asp-validation-for="Input.MiddleName" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mt-2">
+                        <input asp-for="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" />
+                        <label asp-for="Input.LastName"></label>
+                        <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mt-4">
+                        <input asp-for="Input.DisplayName" class="form-control" autocomplete="displayname" aria-required="true" />
+                        <label asp-for="Input.DisplayName">Public Display Name</label>
+                        <span asp-validation-for="Input.DisplayName" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mt-4">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
+                        <label asp-for="Input.Email"></label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mt-2">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" />
+                        <label asp-for="Input.Password"></label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mt-2">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
+                        <label asp-for="Input.ConfirmPassword"></label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <div class="mt-4">
+                        <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+                    </div>
+                </form>
             </div>
-            <div class="form-floating mt-2">
-                <input asp-for="Input.MiddleName" class="form-control" autocomplete="middlename" aria-required="false" />
-                <label asp-for="Input.MiddleName"></label>
-                <span asp-validation-for="Input.MiddleName" class="text-danger"></span>
-            </div>
-            <div class="form-floating mt-2">
-                <input asp-for="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" />
-                <label asp-for="Input.LastName"></label>
-                <span asp-validation-for="Input.LastName" class="text-danger"></span>
-            </div>
-            <div class="form-floating mt-4">
-                <input asp-for="Input.DisplayName" class="form-control" autocomplete="displayname" aria-required="true" />
-                <label asp-for="Input.DisplayName">Public Display Name</label>
-                <span asp-validation-for="Input.DisplayName" class="text-danger"></span>
-            </div>
-            <div class="form-floating mt-4">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
-                <label asp-for="Input.Email"></label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-floating mt-2">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" />
-                <label asp-for="Input.Password"></label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-floating mt-2">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
-                <label asp-for="Input.ConfirmPassword"></label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <div class="mt-4">
-                <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

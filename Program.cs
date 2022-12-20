@@ -43,7 +43,8 @@ builder.Services.AddScoped<IContactEmailSender, ContactEmailSender>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.Configure<ContactUsSettings>(builder.Configuration.GetSection("ContactUsSettings"));
 builder.Services.AddScoped<DataService>();
-builder.Services.Configure<AdminSettings>(builder.Configuration.GetSection("AdminSettings"));
+builder.Services.Configure<OwnerSettings>(builder.Configuration.GetSection("OwnerSettings"));
+builder.Services.Configure<DefaultUserSettings>(builder.Configuration.GetSection("DefaultUserSettings"));
 
 var app = builder.Build();
 

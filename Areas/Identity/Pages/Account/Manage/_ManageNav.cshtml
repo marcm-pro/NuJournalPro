@@ -3,7 +3,17 @@
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
 <ul class="nav nav-pills flex-column">
-    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profile</a></li>
+    @if (User.IsInRole("Owner"))
+    {
+        <li class="nav-item"><a class="nav-link @ManageNavPages.OwnerPanelNavClass(ViewContext)" id="owner-panel" asp-page="./OwnerPanel">Owner Panel</a></li>
+    }
+    else if (User.IsInRole("Administrator"))
+    {
+        <li class="nav-item"><a class="nav-link @ManageNavPages.AdminPanelNavClass(ViewContext)" id="admin-panel" asp-page="./AdminPanel">Administrator Panel</a></li>
+    }
+    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Personal Information</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.SocialMediaNavClass(ViewContext)" id="social-media" asp-page="./SocialMedia">Social Media</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.ProfilePictureNavClass(ViewContext)" id="profilepicture" asp-page="./ProfilePicture">Profile Picture</a></li>
     <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email / Username</a></li>
     <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a></li>
     @if (hasExternalLogins)

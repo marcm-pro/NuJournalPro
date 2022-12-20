@@ -1,0 +1,30 @@
+﻿kbd.qr-code {
+    background-color: transparent;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #db3a34;
+}
+
+.square-img-container {
+    position: relative;
+    background-color: rgba(var(--bs-light-rgb),var(--bs-bg-opacity));
+    border: 1px solid rgba(8,60,130,.07);
+    border-radius: 0.4rem;
+}
+
+    .square-img-container::after {
+        content: "";
+        display: block;
+        padding-bottom: 100%;
+    }
+
+.square-img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    background-color: transparent;
+    border: 1px solid rgba(8,60,130,.07);
+    border-radius: 0.4rem;
+}

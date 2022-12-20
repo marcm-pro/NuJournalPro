@@ -39,5 +39,39 @@ namespace NuJournalPro.Services
         {
             return file?.ContentType;
         }
+
+        public string? MimeType(string fileName)
+        {
+            var file = $"{Directory.GetCurrentDirectory()}/wwwroot/resources/images/{fileName}";
+            var fileExtension = Path.GetExtension(file);
+            if (fileExtension == string.Empty)
+            {
+                return null;
+            }
+            else
+            {
+                if (fileExtension == ".svg")
+                {
+                    return "image/svg+xml";
+                }
+                else if (fileExtension == ".png")
+                {
+                    return "image/png";
+                }
+                else if (fileExtension == ".jpg" || fileExtension == ".jpeg")
+                {
+                    return "image/jpeg";
+                }
+                else if (fileExtension == ".gif")
+                {
+                    return "image/gif";
+                }
+                else if (fileExtension == ".bmp")
+                {
+                    return "image/bmp";
+                }
+                else return null;
+            }
+        }
     }
 }
