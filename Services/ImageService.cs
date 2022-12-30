@@ -26,7 +26,7 @@ namespace NuJournalPro.Services
 
         public async Task<byte[]> EncodeImageAsync(string fileName)
         {
-            var file = $"{Directory.GetCurrentDirectory()}/wwwroot/resources/images/{fileName}";
+            var file = $"{Directory.GetCurrentDirectory()}/wwwresources/images/{fileName}";
             return await File.ReadAllBytesAsync(file);
         }
 
@@ -42,7 +42,7 @@ namespace NuJournalPro.Services
 
         public string? MimeType(string fileName)
         {
-            var file = $"{Directory.GetCurrentDirectory()}/wwwroot/resources/images/{fileName}";
+            var file = $"{Directory.GetCurrentDirectory()}/wwwresources/images/{fileName}";
             var fileExtension = Path.GetExtension(file);
             if (fileExtension == string.Empty)
             {

@@ -4,11 +4,14 @@
 
 @{
     NuJournalUser nuJournalUser = await UserManager.GetUserAsync(User);
+    var displayName = "User";
 }
 
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @nuJournalUser.DisplayName<span>!</span></a></li>
+    @if (nuJournalUser is not null) displayName = nuJournalUser.DisplayName;
+    <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @displayName<span>!</span></a></li>
+
     <li class="nav-item">
         <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
                 <button type="submit" class="nav-link px-lg-3 py-3 py-lg-4 btn btn-link">Logout</button>

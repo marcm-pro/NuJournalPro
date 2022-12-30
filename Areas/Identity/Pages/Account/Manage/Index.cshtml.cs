@@ -5,10 +5,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using NuJournalPro.Enums;
 using NuJournalPro.Models;
 
 namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
@@ -85,7 +87,8 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
 
         private async Task LoadAsync(NuJournalUser user)
         {
-            var userName = await _userManager.GetUserNameAsync(user);
+            Username = await _userManager.GetUserNameAsync(user);
+            UserRole = String.Join(", ", await _userManager.GetRolesAsync(user));
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             var firstName = user.FirstName;
             var middleName = user.MiddleName;
@@ -95,13 +98,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             if (middleName.Length == 1)
             {
                 middleName = middleName + ".";
-            }
-
-            Username = userName;
-
-            var userRole = await _userManager.GetRolesAsync(user);
-
-            UserRole = String.Join(", ", userRole);
+            }           
 
             Input = new InputModel
             {
@@ -128,6 +125,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
+            var userRole = String.Join(", ", await _userManager.GetRolesAsync(user));
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
@@ -141,10 +139,40 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
 
             if (Input.FirstName != user.FirstName || Input.MiddleName != user.MiddleName || Input.LastName != user.LastName || Input.DisplayName != user.DisplayName)
             {
-                user.FirstName = Input.FirstName;
-                user.MiddleName = Input.MiddleName;
-                user.LastName = Input.LastName;
-                user.DisplayName = Input.DisplayName;
+                if (Input.FirstName != user.FirstName) user.FirstName = Input.FirstName;
+                if (Input.MiddleName != user.MiddleName) user.MiddleName = Input.MiddleName;
+                if (Input.LastName != user.LastName) user.LastName = Input.LastName;
+                if (Input.DisplayName != user.DisplayName)
+                {
+                    foreach (var appUser in _userManager.Users.ToList())
+                    {
+                        if (Input.DisplayName.ToUpper() == appUser.DisplayName.ToUpper())
+                        {
+                            ModelState.AddModelError("Input.DisplayName", $"A user with the {Input.DisplayName} public display name already exists.");
+                            return Page();
+                        }
+                        if (Regex.Replace(Input.DisplayName.ToUpper(), @"[^0-9a-zA-Z]+", "") == Regex.Replace(appUser.DisplayName.ToUpper(), @"[^0-9a-zA-Z]+", ""))
+                        {
+                            ModelState.AddModelError("Input.DisplayName", $"A user with a similar public display name to {Input.DisplayName} already exists.");
+                            return Page();
+                        }
+                    }
+
+                    if (userRole.Contains("Owner") == true) user.DisplayName = Input.DisplayName;
+                    
+                    else
+                    {
+                        foreach (var notAllowed in Enum.GetValues(typeof(ForbidenDisplayName)).Cast<ForbidenDisplayName>().ToList())
+                        {
+                            if (Input.DisplayName.ToUpper().Contains(notAllowed.ToString().ToUpper()))
+                            {
+                                ModelState.AddModelError("Input.DisplayName", $"The public display name {Input.DisplayName} is not allowed.");
+                                return Page();
+                            }
+                        }
+                        user.DisplayName = Input.DisplayName;
+                    }
+                }
                 await _userManager.UpdateAsync(user);
             }
 

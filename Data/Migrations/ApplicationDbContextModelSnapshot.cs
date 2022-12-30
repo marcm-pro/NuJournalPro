@@ -191,7 +191,7 @@ namespace NuJournalPro.Data.Migrations
 
                     b.HasIndex("NuJournalUserId");
 
-                    b.ToTable("Blogs", (string)null);
+                    b.ToTable("Blogs");
                 });
 
             modelBuilder.Entity("NuJournalPro.Models.Comment", b =>
@@ -243,7 +243,7 @@ namespace NuJournalPro.Data.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("NuJournalPro.Models.NuJournalUser", b =>
@@ -256,6 +256,14 @@ namespace NuJournalPro.Data.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedByRole")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedByUser")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("DisplayName")
@@ -313,6 +321,15 @@ namespace NuJournalPro.Data.Migrations
                         .HasColumnType("character varying(128)");
 
                     b.Property<string>("MimeType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("Modified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ModifiedByRole")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ModifiedByUser")
                         .HasColumnType("text");
 
                     b.Property<string>("NormalizedEmail")
@@ -417,7 +434,7 @@ namespace NuJournalPro.Data.Migrations
 
                     b.HasIndex("NuJournalUserId");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("NuJournalPro.Models.Tag", b =>
@@ -445,7 +462,7 @@ namespace NuJournalPro.Data.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("Tags", (string)null);
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

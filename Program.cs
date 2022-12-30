@@ -36,15 +36,16 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 // Register custom services.
-builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddSingleton<IImageService, ImageService>();
 builder.Services.AddScoped<ISlugService, BasicSlugService>();
 builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.AddScoped<IContactEmailSender, ContactEmailSender>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.Configure<ContactUsSettings>(builder.Configuration.GetSection("ContactUsSettings"));
-builder.Services.AddScoped<DataService>();
+builder.Services.AddTransient<DataService>();
 builder.Services.Configure<OwnerSettings>(builder.Configuration.GetSection("OwnerSettings"));
 builder.Services.Configure<DefaultUserSettings>(builder.Configuration.GetSection("DefaultUserSettings"));
+builder.Services.Configure<DefaultGraphics>(builder.Configuration.GetSection("DefaultGraphics"));
 
 var app = builder.Build();
 

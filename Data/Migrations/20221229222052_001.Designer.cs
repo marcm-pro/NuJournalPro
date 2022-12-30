@@ -12,7 +12,7 @@ using NuJournalPro.Data;
 namespace NuJournalPro.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20221219172046_001")]
+    [Migration("20221229222052_001")]
     partial class _001
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -260,6 +260,14 @@ namespace NuJournalPro.Data.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
+                    b.Property<string>("CreatedByRole")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedByUser")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -315,6 +323,15 @@ namespace NuJournalPro.Data.Migrations
                         .HasColumnType("character varying(128)");
 
                     b.Property<string>("MimeType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("Modified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ModifiedByRole")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ModifiedByUser")
                         .HasColumnType("text");
 
                     b.Property<string>("NormalizedEmail")

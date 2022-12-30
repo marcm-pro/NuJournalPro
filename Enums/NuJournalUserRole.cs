@@ -8,11 +8,19 @@ namespace NuJournalPro.Enums
         Owner,
         [Description("Administrator")]
         Administrator,
+        [Description("Editor")]
+        Editor,
+        [Description("Author")]
+        Author,
         [Description("Contributor")]
         Contributor,
         [Description("Moderator")]
         Moderator,
         [Description("Reader")]
-        Reader
+        Reader,
+        [Description("Restricted")]
+        Restricted,
+        [Description("Banned")]
+        Banned
     }
 }

@@ -4,14 +4,24 @@ namespace NuJournalPro.Enums
 {
     public enum ForbidenDisplayName
     {
-        [Description("Admin")]
-        Admin,
+        [Description("Owner")]
+        Owner,
         [Description("Administrator")]
         Administrator,
-        [Description("Moderator")]
-        Moderator,
+        [Description("Editor")]
+        Editor,
+        [Description("Author")]
+        Author,
         [Description("Contributor")]
         Contributor,
+        [Description("Moderator")]
+        Moderator,
+        [Description("Reader")]
+        Reader,
+        [Description("Restricted")]
+        Restricted,
+        [Description("Banned")]
+        Banned,
         [Description("Manager")]
         Manager,
         [Description("Support")]
@@ -20,7 +30,7 @@ namespace NuJournalPro.Enums
         Staff,
         [Description("NuJournal")]
         NuJournal,
-        [Description("NuJournalPro")]
-        NuJournalPro
+        [Description("Admin")]
+        Admin
     }
 }

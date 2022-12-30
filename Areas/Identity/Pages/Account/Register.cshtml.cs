@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -143,10 +144,34 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
             {
                 var user = CreateUser();
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                foreach (var notAllowed in Enum.GetValues(typeof(ForbidenDisplayName)).Cast<ForbidenDisplayName>().ToList())
+                {
+                    if (Input.DisplayName.ToUpper().Contains(notAllowed.ToString().ToUpper()))
+                    {
+                        ModelState.AddModelError("Input.DisplayName", $"The public display name {Input.DisplayName} is not allowed.");
+                        return Page();
+                    }
+                }
+
+                foreach (var newUser in _userManager.Users.ToList())
+                {
+                    if (Input.DisplayName.ToUpper() == newUser.DisplayName.ToUpper())
+                    {
+                        ModelState.AddModelError("Input.DisplayName", $"A user with the {Input.DisplayName} public display name already exists.");
+                        return Page();
+                    }
+                    if (Regex.Replace(Input.DisplayName.ToUpper(), @"[^0-9a-zA-Z]+", "") == Regex.Replace(newUser.DisplayName.ToUpper(), @"[^0-9a-zA-Z]+", ""))
+                    {
+                        ModelState.AddModelError("Input.DisplayName", $"A user with a similar public display name to {Input.DisplayName} already exists.");
+                        return Page();
+                    }
+                }
+
                 user.ImageData = await _imageService.EncodeImageAsync(_defaultUserSettings.Avatar);
                 user.MimeType = _imageService.MimeType(_defaultUserSettings.Avatar);
+
+                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
@@ -201,9 +226,8 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
                 user.FirstName = Input.FirstName;
                 user.MiddleName = Input.MiddleName;
                 user.LastName = Input.LastName;
-                user.DisplayName = Input.DisplayName;                
+                user.DisplayName = Input.DisplayName;
                 return user;
-                //return Activator.CreateInstance<NuJournalUser>();
             }
             catch
             {

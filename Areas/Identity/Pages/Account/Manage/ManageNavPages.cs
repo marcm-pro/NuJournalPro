@@ -21,6 +21,10 @@ namespace  NuJournalPro.Areas.Identity.Pages.Account.Manage
 
         public static string AdminPanel => "AdminPanel";
 
+        public static string AddNewUser => "AddNewUser";
+
+        public static string EditUser => "EditUser";
+
         public static string Index => "Index";
 
         public static string SocialMedia => "SocialMedia";
@@ -76,6 +80,10 @@ namespace  NuJournalPro.Areas.Identity.Pages.Account.Manage
         public static string OwnerPanelNavClass(ViewContext viewContext) => PageNavClass(viewContext, OwnerPanel);
 
         public static string AdminPanelNavClass(ViewContext viewContext) => PageNavClass(viewContext, AdminPanel);
+
+        public static string AddNewUserNavClass(ViewContext viewContext) => PageNavClass(viewContext, AddNewUser);
+
+        public static string EditUserNavClass(ViewContext viewContext) => PageNavClass(viewContext, EditUser);
 
         public static string IndexNavClass(ViewContext viewContext) => PageNavClass(viewContext, Index);
 

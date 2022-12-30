@@ -52,6 +52,22 @@ namespace NuJournalPro.Models
         [DataType(DataType.DateTime)]
         public DateTime Joined { get; set; } = DateTime.UtcNow;
 
+        [Display(Name = "Modified")]
+        [DataType(DataType.DateTime)]
+        public DateTime? Modified { get; set; } = null;
+
+        // The username that created this user
+        public string CreatedByUser { get; set; } = "User Registration";
+
+        // The user role that created this user
+        public string CreatedByRole { get; set; } = "Application";
+
+        // The username that modified this user last time.
+
+        public string? ModifiedByUser { get; set; } = null;
+        // The user role that modified this user last time.
+        public string? ModifiedByRole { get; set; } = null;
+
         // User Avatar or Profile Picture
         public byte[]? ImageData { get; set; }
         public string? MimeType { get; set; }

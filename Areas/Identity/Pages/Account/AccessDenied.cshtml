@@ -1,10 +1,23 @@
 ﻿@page
 @model AccessDeniedModel
+@using NuJournalPro.Services.Interfaces
+
+@inject IImageService ImageService
+
 @{
     ViewData["Title"] = "Access denied";
 }
 
-<header>
-    <h1 class="text-danger">@ViewData["Title"]</h1>
-    <p class="text-danger">You do not have access to this resource.</p>
-</header>
+<section class="wrapper">
+    <div class="container pt-10 pb-14 pb-md-16">
+        <h1 class="text-danger">@ViewData["Title"]</h1>
+        <div class="row d-flex justify-content-center">
+            <div class="col-md-6">
+                <p class="text-danger">You do not have access to this resource.</p>
+                <div class="any-img-container">
+                    <img id="accessDeniedImage" class="any-img" src="@ImageService.DecodeImage(Model.ImageData,Model.MimeType)" alt="Access Denied" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
