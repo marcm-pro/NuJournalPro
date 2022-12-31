@@ -4,7 +4,7 @@
 
 @{
     var isOwner = User.IsInRole("Owner");
-    var isAdmin = User.IsInRole("Admin");
+    var isAdmin = User.IsInRole("Administrator");
     if (isOwner || isAdmin)
     {
         ViewData["Title"] = "Delete User Account";

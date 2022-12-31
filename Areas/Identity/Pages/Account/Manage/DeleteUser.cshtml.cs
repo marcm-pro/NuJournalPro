@@ -71,7 +71,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
 
             var activeUserInfo = await LoadActiveUserAsync(activeUser);
 
-            if (!activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()) || !activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Administrator.ToString()))
+            if (!activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()) && !activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Administrator.ToString()))
             { 
                 AccessDeniedImageData = await _imageService.EncodeImageAsync(_defaultGraphics.SecureAccess);
                 AccessDeniedMimeType = _imageService.MimeType(_defaultGraphics.SecureAccess);
@@ -95,7 +95,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
                     ViewData["SelectUserList"] = new SelectList(appUserList, "UserName", "UserNameWithRoles");
 
                 }
-                else if (activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Administrator.ToString()) && !activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()))
+                else if (activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Administrator.ToString()))
                 {
                     var appUserList = _userManager.Users.Cast<NuJournalUser>()
                                                         .Where(u => !u.UserName.Equals(activeUserInfo.UserName))
