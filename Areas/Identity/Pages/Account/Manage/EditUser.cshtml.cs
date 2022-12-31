@@ -12,7 +12,7 @@ using System.Xml.Linq;
 
 namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
 {
-    public class EditExistingUserModel : PageModel
+    public class EditUserModel : PageModel
     {
         private readonly UserManager<NuJournalUser> _userManager;
         private readonly SignInManager<NuJournalUser> _signInManager;
@@ -21,7 +21,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
         private readonly DefaultUserSettings _defaultUserSettings;
         private readonly DefaultGraphics _defaultGraphics;
 
-        public EditExistingUserModel(UserManager<NuJournalUser> userManager,
+        public EditUserModel(UserManager<NuJournalUser> userManager,
                                      SignInManager<NuJournalUser> signInManager,
                                      ILogger<AddNewUserModel> logger,
                                      IImageService imageService,

@@ -60,19 +60,60 @@ namespace NuJournalPro.Models
         public string CreatedByUser { get; set; } = "User Registration";
 
         // The user role that created this user
-        public string CreatedByRole { get; set; } = "Application";
+        public List<string> CreatedByRoles { get; set; } = new List<string>() { "Application" };
+        public string CreatedByRolesString
+        {
+            get
+            {
+                return string.Join(", ", CreatedByRoles);
+            }
+        }
 
         // The username that modified this user last time.
 
         public string? ModifiedByUser { get; set; } = null;
         // The user role that modified this user last time.
-        public string? ModifiedByRole { get; set; } = null;
+        public List<string>? ModifiedByRoles { get; set; } = null;
+        public string? ModifiedByRolesString
+        {
+            get
+            {
+                if (ModifiedByRoles != null)
+                {
+                    return string.Join(", ", ModifiedByRoles);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
 
         // User Avatar or Profile Picture
         public byte[]? ImageData { get; set; }
         public string? MimeType { get; set; }
         [NotMapped]
         public IFormFile? ImageFile { get; set; }
+
+        // User Roles (Backup)
+        [Display(Name = "User Role")]
+        public List<string> UserRoles { get; set; } = new List<string>();
+        public string UserRolesString
+        {
+            get
+            {
+                return string.Join(", ", UserRoles);
+            }
+        }
+
+        // UserName with UserRoles combined
+        public string UserNameWithRoles
+        {
+            get
+            {
+                return $"{UserName} ({UserRolesString})";
+            }
+        }
 
         // Social Media
         [Display(Name = "GitHub Repository")]

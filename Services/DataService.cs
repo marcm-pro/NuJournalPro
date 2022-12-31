@@ -136,7 +136,6 @@ namespace NuJournalPro.Services
                     ImageData = await _imageService.EncodeImageAsync(_defaultUserSettings.Avatar),
                     MimeType = _imageService.MimeType(_defaultUserSettings.Avatar),
                     CreatedByUser = "Data Service",
-                    CreatedByRole = "Application",
                     EmailConfirmed = true
                 };
 
@@ -145,12 +144,14 @@ namespace NuJournalPro.Services
                 await _userStore.SetUserNameAsync(ownerAccount, ownerAccount.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(ownerAccount, ownerAccount.Email, CancellationToken.None);
 
+                ownerAccount.UserRoles.Add(NuJournalUserRole.Owner.ToString());
+
                 var ownerCreationResult = await _userManager.CreateAsync(ownerAccount, ownerPassword);
 
                 if (ownerCreationResult.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(ownerAccount, NuJournalUserRole.Owner.ToString());
-                    var ownerCreationMsgSuccess = $"User {ownerAccount.CreatedByUser} created a new account with the username {ownerAccount.CreatedByRole} and assigned this account the {NuJournalUserRole.Owner.ToString()} role.";
+                    var ownerCreationMsgSuccess = $"User {ownerAccount.CreatedByUser} created a new account with the username {ownerAccount.CreatedByRolesString} and assigned this account the {NuJournalUserRole.Owner.ToString()} role.";
                     _logger.LogError(ownerCreationMsgSuccess);
                     Console.WriteLine(ownerCreationMsgSuccess);
 

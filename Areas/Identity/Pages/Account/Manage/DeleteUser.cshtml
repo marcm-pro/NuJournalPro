@@ -1,0 +1,56 @@
+﻿@page
+@model NuJournalPro.Areas.Identity.Pages.Account.Manage.DeleteUserModel
+@inject NuJournalPro.Services.Interfaces.IImageService ImageService
+
+@{
+    var isOwner = User.IsInRole("Owner");
+    var isAdmin = User.IsInRole("Admin");
+    if (isOwner || isAdmin)
+    {
+        ViewData["Title"] = "Delete User Account";
+        if (isOwner) ViewData["ActivePage"] = ManageNavPages.OwnerPanel;
+        else
+        if (isAdmin) ViewData["ActivePage"] = ManageNavPages.AdminPanel;
+        else ViewData["ActivePage"] = ManageNavPages.Index;
+
+        <h3>@ViewData["Title"]</h3>
+        <partial name="_StatusMessage" for="StatusMessage" />
+        <div class="row">
+            <div class="col-md-12">
+                <form id="add-new-user-form" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <dvi class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <div class="form-select-wrapper mt-2">
+                                    <label asp-for="SelectedUser" class="control-label"></label>
+                                    <select asp-for="SelectedUser" class="form-control" asp-items="ViewBag.SelectUserList"></select>
+                                </div>
+                            </div>
+                            <div class="form-floating mt-4">
+                                <input asp-for="ConfirmEmail" class="form-control" onchange="document.getElementById('username-email-label').textContent='Select a profile picture for user: ' + this.value" />
+                                <label asp-for="ConfirmEmail" class="form-label"></label>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button id="create-new-user-button" type="submit" class="w-50 btn btn-lg btn-primary">Delete User Account</button>
+                        </div>
+                    </dvi>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        ViewData["Title"] = "Access Denied!";
+        ViewData["ActivePage"] = ManageNavPages.Index;
+        <h3 class="text-danger">@ViewData["Title"]</h3>
+        <div class="row d-flex justify-content-center">
+            <div class="col-md-6">
+                <div class="any-square-img-container">
+                    <img id="accessDeniedImage" class="any-square-img" src="@ImageService.DecodeImage(Model.AccessDeniedImageData,Model.AccessDeniedMimeType)" alt="Access Denied" />
+                </div>
+            </div>
+        </div>
+    }
+}

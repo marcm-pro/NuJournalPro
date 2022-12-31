@@ -95,9 +95,9 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             var lastName = user.LastName;
             var displayName = user.DisplayName;
 
-            if (middleName.Length == 1)
+            if (middleName != null && middleName.Length == 1)
             {
-                middleName = middleName + ".";
+                middleName += ".";
             }           
 
             Input = new InputModel

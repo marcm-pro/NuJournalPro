@@ -1,11 +1,12 @@
 ﻿@page
 @model OwnerPanelModel
+@inject NuJournalPro.Services.Interfaces.IImageService ImageService
 
 @if (User.IsInRole("Owner"))
 {
     ViewData["Title"] = "Owner's Control Panel";
     ViewData["ActivePage"] = ManageNavPages.OwnerPanel;
- 
+
     <h3>@ViewData["Title"]</h3>
     <div class="row">
         <div class="col-md-6">
@@ -15,7 +16,12 @@
                     <a id="add-new-user" asp-page="./AddNewUser" class="btn btn-primary w-100">Add New User</a>
                 </div>
                 <div class="col-md-6 mt-4">
-                    <a id="edit-existing-user" asp-page="./EditExistingUser" class="btn btn-primary w-100">Edit Existing User</a>
+                    <a id="edit-existing-user" asp-page="./EditUser" class="btn btn-primary w-100">Edit Existing User</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 mt-4 text-center">
+                    <a id="delete-existing-user" asp-page="./DeleteUser" class="btn btn-danger w-50">Delete Existing User</a>
                 </div>
             </div>
         </div>
@@ -27,6 +33,13 @@ else
     ViewData["ActivePage"] = ManageNavPages.Index;
     <h3>@ViewData["Title"]</h3>
     <p>You do not have permission to access this page.</p>
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-6">
+            <div class="any-square-img-container">
+                <img id="accessDeniedImage" class="any-square-img" src="@ImageService.DecodeImage(Model.AccessDeniedImageData,Model.AccessDeniedMimeType)" alt="Access Denied" />
+            </div>
+        </div>
+    </div>
 }
 
 @section Scripts {

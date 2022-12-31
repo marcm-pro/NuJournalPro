@@ -44,10 +44,6 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             _newUserEmailStore = GetEmailStore();
         }
 
-        public string ActiveUsername { get; set; }
-
-        public string ActiveUserRole { get; set; }
-
         public byte[] AccessDeniedImageData { get; set; }
         public string AccessDeniedMimeType { get; set; }
 
@@ -106,6 +102,23 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             public IFormFile ImageFile { get; set; }
         }
 
+        private class ActiveUserInfo
+        {
+            public ActiveUserInfo()
+            {
+            }
+
+            public string UserName { get; set; }
+            public List<string> UserRoles { get; set; } = new List<string>();            
+            public string UserRolesString
+            { 
+                get
+                {
+                    return string.Join(", ", UserRoles);
+                }
+            }
+        }
+        
         public async Task<IActionResult> OnGetAsync()
         {
             var activeUser = await _userManager.GetUserAsync(User);
@@ -114,9 +127,9 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            await LoadActiveUserAsync(activeUser);
+            var activeUserInfo = await LoadActiveUserAsync(activeUser);
 
-            if (ActiveUserRole.Equals("Owner") != true && ActiveUserRole.Equals("Administrator") != true)
+            if (activeUserInfo.UserRolesString.Equals("Owner") != true && activeUserInfo.UserRolesString.Equals("Administrator") != true)
             {
                 AccessDeniedImageData = await _imageService.EncodeImageAsync(_defaultGraphics.SecureAccess);
                 AccessDeniedMimeType = _imageService.MimeType(_defaultGraphics.SecureAccess);
@@ -129,7 +142,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
                     MimeType = _imageService.MimeType(_defaultUserSettings.Avatar)
                 };
 
-                if (ActiveUserRole.Equals("Owner"))
+                if (activeUserInfo.UserRolesString.Equals("Owner"))
                 {
                     ViewData["NewUserRoleList"] = new SelectList(Enum.GetValues(typeof(NuJournalUserRole))
                                                                      .Cast<NuJournalUserRole>()
@@ -137,7 +150,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
                                                                      .ToList(), NuJournalUserRole.Reader);
                     NewUserRole = NuJournalUserRole.Reader;
                 }
-                else if (ActiveUserRole.Equals("Administrator"))
+                else if (activeUserInfo.UserRolesString.Equals("Administrator"))
                 {
                     ViewData["NewUserRoleList"] = new SelectList(Enum.GetValues(typeof(NuJournalUserRole))
                                                                      .Cast<NuJournalUserRole>()
@@ -166,11 +179,11 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
                     return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
                 }
 
-                await LoadActiveUserAsync(activeUser);
+                var activeUserInfo = await LoadActiveUserAsync(activeUser);
 
-                var newUser = CreateNewUser();
+                var newUser = await CreateNewUser(activeUserInfo, NewUserInput.ImageFile);
 
-                if (ActiveUserRole.Contains("Owner") != true && ActiveUserRole.Contains("Administrator") == true)
+                if (activeUserInfo.UserRolesString.Contains("Owner") != true && activeUserInfo.UserRolesString.Contains("Administrator") == true)
                 {
                     foreach (var notAllowed in Enum.GetValues(typeof(ForbidenDisplayName)).Cast<ForbidenDisplayName>().ToList())
                     {
@@ -196,21 +209,18 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
                     }
                 }
 
-                NewUserInput.ImageData = await _imageService.EncodeImageAsync(NewUserInput.ImageFile);
-                NewUserInput.MimeType = _imageService.MimeType(NewUserInput.ImageFile);
-
-                newUser.ImageData = NewUserInput.ImageData;
-                newUser.MimeType = NewUserInput.MimeType;
-
                 await _newUserStore.SetUserNameAsync(newUser, NewUserInput.Email, CancellationToken.None);
                 await _newUserEmailStore.SetEmailAsync(newUser, NewUserInput.Email, CancellationToken.None);
+
+                newUser.UserRoles.Add(newUserRole.ToString());
+
                 var userCreationResult = await _userManager.CreateAsync(newUser, NewUserInput.Password);
 
                 if (userCreationResult.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(newUser, newUserRole.ToString());
 
-                    _logger.LogInformation($"User {ActiveUsername} created a new account with the username {newUser.UserName} and assigned this account the {newUserRole.ToString()} role.");
+                    _logger.LogInformation($"User {activeUserInfo.UserName} created a new account with the username {newUser.UserName} and assigned this account the {newUserRole.ToString()} role.");
 
                     StatusMessage = $"User {newUser.UserName} with the role {newUserRole.ToString()} has been successfully created.";
                     return RedirectToPage();
@@ -226,13 +236,16 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             return Page();
         }
 
-        private async Task LoadActiveUserAsync(NuJournalUser activeUser)
+        private async Task<ActiveUserInfo> LoadActiveUserAsync(NuJournalUser activeUser)
         {
-            ActiveUsername = await _userManager.GetUserNameAsync(activeUser);
-            ActiveUserRole = String.Join(", ", await _userManager.GetRolesAsync(activeUser)); // in case the user has more than one role
+            return new ActiveUserInfo()
+            {
+                UserName = await _userManager.GetUserNameAsync(activeUser),
+                UserRoles = await _userManager.GetRolesAsync(activeUser) as List<string>
+            };
         }
 
-        private NuJournalUser CreateNewUser()
+        private async Task<NuJournalUser> CreateNewUser(ActiveUserInfo activeUserInfo, IFormFile newUserImageFile)
         {
             try
             {
@@ -244,8 +257,18 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
                 newUser.LastName = NewUserInput.LastName;
                 newUser.DisplayName = NewUserInput.DisplayName;
                 newUser.PhoneNumber = NewUserInput.PhoneNumber;
-                newUser.CreatedByUser = ActiveUsername;
-                newUser.CreatedByRole = ActiveUserRole;
+                newUser.CreatedByUser = activeUserInfo.UserName;
+                newUser.CreatedByRoles = activeUserInfo.UserRoles;
+                if (newUserImageFile == null)
+                {
+                    newUser.ImageData = await _imageService.EncodeImageAsync(_defaultUserSettings.Avatar);
+                    newUser.MimeType = _imageService.MimeType(_defaultUserSettings.Avatar);
+                }
+                else
+                {
+                    newUser.ImageData = await _imageService.EncodeImageAsync(newUserImageFile);
+                    newUser.MimeType = _imageService.MimeType(newUserImageFile);
+                }
                 newUser.EmailConfirmed = true;
                 return newUser;
             }

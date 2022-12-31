@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -36,11 +37,12 @@ namespace NuJournalPro.Data.Migrations
                     Joined = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedByUser = table.Column<string>(type: "text", nullable: false),
-                    CreatedByRole = table.Column<string>(type: "text", nullable: false),
+                    CreatedByRoles = table.Column<List<string>>(type: "text[]", nullable: false),
                     ModifiedByUser = table.Column<string>(type: "text", nullable: true),
-                    ModifiedByRole = table.Column<string>(type: "text", nullable: true),
+                    ModifiedByRoles = table.Column<List<string>>(type: "text[]", nullable: true),
                     ImageData = table.Column<byte[]>(type: "bytea", nullable: true),
                     MimeType = table.Column<string>(type: "text", nullable: true),
+                    UserRoles = table.Column<List<string>>(type: "text[]", nullable: false),
                     GitHubUrl = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     TwitterUrl = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     LinkedInUrl = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
