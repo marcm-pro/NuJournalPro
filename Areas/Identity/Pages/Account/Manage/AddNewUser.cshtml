@@ -1,6 +1,5 @@
 ﻿@page
 @model NuJournalPro.Areas.Identity.Pages.Account.Manage.AddNewUserModel
-@inject NuJournalPro.Services.Interfaces.IImageService ImageService
 
 @{
     var isOwner = User.IsInRole("Owner");
@@ -21,57 +20,58 @@
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <dvi class="row">
                         <div class="col-md-6">
-                            <div class="form-floating">
-                                <input asp-for="NewUserInput.Email" class="form-control" onchange="document.getElementById('username-email-label').textContent='Select a profile picture for user: ' + this.value" />
-                                <label asp-for="NewUserInput.Email" class="form-label"></label>
-                            </div>
-                            <div class="form-floating mt-3">
-                                <input asp-for="NewUserInput.FirstName" class="form-control" />
-                                <label asp-for="NewUserInput.FirstName" class="form-label"></label>
-                                <span asp-validation-for="NewUserInput.FirstName" class="text-danger"></span>
-                            </div>
-                            <div class="form-floating mt-2">
-                                <input asp-for="NewUserInput.MiddleName" class="form-control" />
-                                <label asp-for="NewUserInput.MiddleName" class="form-label"></label>
-                                <span asp-validation-for="NewUserInput.MiddleName" class="text-danger"></span>
-                            </div>
-                            <div class="form-floating mt-2">
-                                <input asp-for="NewUserInput.LastName" class="form-control" />
-                                <label asp-for="NewUserInput.LastName" class="form-label"></label>
-                                <span asp-validation-for="NewUserInput.LastName" class="text-danger"></span>
-                            </div>
-                            <div class="form-floating mt-3">
-                                <input asp-for="NewUserInput.DisplayName" class="form-control" />
-                                <label asp-for="NewUserInput.DisplayName" class="form-label"></label>
-                                <span asp-validation-for="NewUserInput.DisplayName" class="text-danger"></span>
-                            </div>
-                            <div class="form-floating mt-3">
-                                <input asp-for="NewUserInput.PhoneNumber" class="form-control" />
-                                <label asp-for="NewUserInput.PhoneNumber" class="form-label"></label>
-                                <span asp-validation-for="NewUserInput.PhoneNumber" class="text-danger"></span>
-                            </div>
-                            <div class="form-floating mt-2">
-                                <input asp-for="NewUserInput.Password" class="form-control" autocomplete="new-password" aria-required="true" />
-                                <label asp-for="NewUserInput.Password"></label>
-                                <span asp-validation-for="NewUserInput.Password" class="text-danger"></span>
-                            </div>
-                            <div class="form-floating mt-2">
-                                <input asp-for="NewUserInput.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
-                                <label asp-for="NewUserInput.ConfirmPassword"></label>
-                                <span asp-validation-for="NewUserInput.ConfirmPassword" class="text-danger"></span>
-                            </div>
-                            @if (ViewData["NewUserRoleList"] != null)
-                            {
-                                <div class="form-floating">
-                                    <div class="form-select-wrapper mt-2">
-                                        <label asp-for="NewUserRole" class="control-label"></label>
-                                        <select asp-for="NewUserRole" class="form-control" asp-items="ViewBag.NewUserRoleList"></select>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="form-floating">
+                                        <input asp-for="NewUserInput.Email" class="form-control" onchange="document.getElementById('username-email-label').textContent='Select a profile picture for user: ' + this.value" />
+                                        <label asp-for="NewUserInput.Email" class="form-label"></label>
+                                    </div>
+                                    <div class="form-floating mt-3">
+                                        <input asp-for="NewUserInput.FirstName" class="form-control" />
+                                        <label asp-for="NewUserInput.FirstName" class="form-label"></label>
+                                        <span asp-validation-for="NewUserInput.FirstName" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-floating mt-2">
+                                        <input asp-for="NewUserInput.MiddleName" class="form-control" />
+                                        <label asp-for="NewUserInput.MiddleName" class="form-label"></label>
+                                        <span asp-validation-for="NewUserInput.MiddleName" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-floating mt-2">
+                                        <input asp-for="NewUserInput.LastName" class="form-control" />
+                                        <label asp-for="NewUserInput.LastName" class="form-label"></label>
+                                        <span asp-validation-for="NewUserInput.LastName" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-floating mt-3">
+                                        <input asp-for="NewUserInput.DisplayName" class="form-control" />
+                                        <label asp-for="NewUserInput.DisplayName" class="form-label"></label>
+                                        <span asp-validation-for="NewUserInput.DisplayName" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-floating mt-3">
+                                        <input asp-for="NewUserInput.PhoneNumber" class="form-control" />
+                                        <label asp-for="NewUserInput.PhoneNumber" class="form-label"></label>
+                                        <span asp-validation-for="NewUserInput.PhoneNumber" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-floating mt-2">
+                                        <input asp-for="NewUserInput.Password" class="form-control" autocomplete="new-password" aria-required="true" />
+                                        <label asp-for="NewUserInput.Password"></label>
+                                        <span asp-validation-for="NewUserInput.Password" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-floating mt-2">
+                                        <input asp-for="NewUserInput.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
+                                        <label asp-for="NewUserInput.ConfirmPassword"></label>
+                                        <span asp-validation-for="NewUserInput.ConfirmPassword" class="text-danger"></span>
+                                    </div>
+                                    <div class="form-floating">
+                                        <div class="form-select-wrapper mt-2">
+                                            <label asp-for="NewUserRole" class="control-label"></label>
+                                            <select asp-for="NewUserRole" class="form-select" asp-items="ViewBag.NewUserRoleList"></select>
+                                        </div>
                                     </div>
                                 </div>
-                            }
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="square-img-container">
+                            <div class="square-img-container shadow-lg">
                                 <img id="contactImage" class="square-img" src="~/resources/images/DefaultUser.png" alt="Profile Picture" />
                             </div>
                             <div class="mt-4">
@@ -96,7 +96,7 @@
         <div class="row d-flex justify-content-center">
             <div class="col-md-6">
                 <div class="any-square-img-container">
-                    <img id="accessDeniedImage" class="any-square-img" src="@ImageService.DecodeImage(Model.AccessDeniedImageData,Model.AccessDeniedMimeType)" alt="Access Denied" />
+                    <img id="accessDeniedImage" class="any-square-img" src="@Model.AccessDeniedImage.ImageBase64" alt="Access Denied" />
                 </div>
             </div>
         </div>

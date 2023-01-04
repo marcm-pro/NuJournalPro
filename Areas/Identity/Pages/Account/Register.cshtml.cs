@@ -22,6 +22,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuJournalPro.Enums;
 using NuJournalPro.Models;
+using NuJournalPro.Models.Identity;
+using NuJournalPro.Services.Identity.Interfaces;
 using NuJournalPro.Services.Interfaces;
 
 namespace NuJournalPro.Areas.Identity.Pages.Account
@@ -34,8 +36,8 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<NuJournalUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-        private readonly IImageService _imageService;
         private readonly DefaultUserSettings _defaultUserSettings;
+        private readonly IUserService _userService;
 
         public RegisterModel(
             UserManager<NuJournalUser> userManager,
@@ -44,7 +46,8 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
             IImageService imageService,
-            IOptions<DefaultUserSettings> defaultUserSettings)
+            IOptions<DefaultUserSettings> defaultUserSettings,
+            IUserService userService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -53,7 +56,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _defaultUserSettings = defaultUserSettings.Value;
-            _imageService = imageService;
+            _userService = userService;
         }
 
         /// <summary>
@@ -79,56 +82,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public class InputModel
-        {
-            [Required]
-            [Display(Name = "First Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-            public string FirstName { get; set; }
-
-            [Display(Name = "Middle Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 1)]
-            public string MiddleName { get; set; }
-
-            [Required]
-            [Display(Name = "Last Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-            public string LastName { get; set; }
-
-            [Required]
-            [Display(Name = "Public Display Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-            public string DisplayName { get; set; }
-
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
-            [EmailAddress]
-            [Display(Name = "Email")]
-            public string Email { get; set; }
-
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-            [DataType(DataType.Password)]
-            [Display(Name = "Password")]
-            public string Password { get; set; }
-
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-            public string ConfirmPassword { get; set; }
-        }
-
+        public class InputModel : UserInputModel { }
 
         public async Task OnGetAsync(string returnUrl = null)
         {
@@ -167,8 +121,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account
                     }
                 }
 
-                user.ImageData = await _imageService.EncodeImageAsync(_defaultUserSettings.Avatar);
-                user.MimeType = _imageService.MimeType(_defaultUserSettings.Avatar);
+                user.Avatar = await _userService.GetDefaultUserAvatar();
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);

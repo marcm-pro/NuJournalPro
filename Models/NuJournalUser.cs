@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.IO.Compression;
 
 namespace NuJournalPro.Models
 {
@@ -90,8 +91,7 @@ namespace NuJournalPro.Models
         }
 
         // User Avatar or Profile Picture
-        public byte[]? ImageData { get; set; }
-        public string? MimeType { get; set; }
+        public CompressedImage? Avatar { get; set; }
         [NotMapped]
         public IFormFile? ImageFile { get; set; }
 

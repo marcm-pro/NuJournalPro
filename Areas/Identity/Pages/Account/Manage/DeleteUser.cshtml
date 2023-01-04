@@ -5,6 +5,8 @@
 @{
     var isOwner = User.IsInRole("Owner");
     var isAdmin = User.IsInRole("Administrator");
+    var disabledInput = string.Empty;
+
     if (isOwner || isAdmin)
     {
         ViewData["Title"] = "Delete User Account";
@@ -28,12 +30,12 @@
                                 </div>
                             </div>
                             <div class="form-floating mt-4">
-                                <input asp-for="ConfirmEmail" class="form-control" onchange="document.getElementById('username-email-label').textContent='Select a profile picture for user: ' + this.value" />
-                                <label asp-for="ConfirmEmail" class="form-label"></label>
+                                <input asp-for="ConfirmUserName" class="form-control" />
+                                <label asp-for="ConfirmUserName" class="form-label"></label>
                             </div>
-                        </div>
-                        <div class="mt-4">
-                            <button id="create-new-user-button" type="submit" class="w-50 btn btn-lg btn-primary">Delete User Account</button>
+                            <div class="mt-4 text-center">
+                                <button id="create-new-user-button" type="submit" class="w-50 btn btn-lg btn-danger">Delete User Account</button>
+                            </div>
                         </div>
                     </dvi>
                 </form>

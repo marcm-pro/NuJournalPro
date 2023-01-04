@@ -1,6 +1,5 @@
 ﻿@page
 @model NuJournalPro.Areas.Identity.Pages.Account.Manage.EditUserModel
-@inject NuJournalPro.Services.Interfaces.IImageService ImageService
 
 @{
     var isOwner = User.IsInRole("Owner");
@@ -16,21 +15,27 @@
         <h3>@ViewData["Title"]</h3>
         <partial name="_StatusMessage" for="StatusMessage" />
         <div class="row">
-        @*
-            <div class="col-md-12 bt-4">
-                <div class="form-floating">
-                    <div class="form-select-wrapper mb-4">
-                        <select asp-for="AppUserList" class="form-control" asp-items="ViewBag.AppUserList"></select>
-                        <label asp-for="AppUserList" class="control-label"></label>
-                    </div>
-                    <span asp-validation-for="AppUserList" class="text-danger"></span>
-                </div>
-            </div>
-         *@
             <div class="col-md-12">
-                <form id="add-new-user-form" method="post" enctype="multipart/form-data">
+                <form id="select-user-form" method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <div class="form-select-wrapper mb-4">
+                                    <label asp-for="SelectedUser" class="control-label"></label>
+                                    <select asp-for="SelectedUser" class="form-control" asp-items="ViewBag.SelectUserList"></select>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button id="load-user-button" type="submit" class="w-50 btn btn-lg btn-primary">Select User Account</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-12 mt-4 @Model.visibilityUserForm">
+                <form asp-page-handler="ModifyUser" id="edit-user-form" method="post" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <dvi class="row">
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-floating">
                                 <input asp-for="Input.Email" class="form-control" onchange="document.getElementById('username-email-label').textContent='Select a profile picture for user: ' + this.value" />
@@ -71,26 +76,21 @@
                                 <label asp-for="Input.ConfirmPassword"></label>
                                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                             </div>
-                            <div class="form-floating mt-2 mb-4">
-                                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
-                                <label asp-for="Input.ConfirmPassword"></label>
-                                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-                            </div>
                         </div>
                         <div class="col-md-6">
                             <div class="square-img-container">
                                 <img id="contactImage" class="square-img" src="@ImageService.DecodeImage(Model.Input.ImageData,Model.Input.MimeType)" alt="Profile Picture" />
                             </div>
                             <div class="mt-4">
-                                <label id="username-email-label" asp-for="Input.ImageFile" class="control-label" class="form-label">Select a profile picture for user: @Model.Input.Email</label>
+                                <label id="username-email-label" asp-for="Input.ImageFile" class="control-label" class="form-label">Select a profile picture for user: @*@Model.Input.Email*@</label>
                                 <input type="file" asp-for="Input.ImageFile" class="form-control" accept=".jpg,.jpeg,.svg,.png,.gif" onchange="document.getElementById('contactImage').src=window.URL.createObjectURL(this.files[0])" />
                                 <span asp-validation-for="Input.ImageFile" class="text-danger"></span>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <button id="create-new-user-button" type="submit" class="w-50 btn btn-lg btn-primary">Modify User Account</button>
+                            <button id="edit-user-button" type="submit" class="w-50 btn btn-lg btn-primary">Modify User Account</button>
                         </div>
-                    </dvi>
+                    </div>
                 </form>
             </div>
         </div>
@@ -103,7 +103,7 @@
         <div class="row d-flex justify-content-center">
             <div class="col-md-6">
                 <div class="any-square-img-container">
-                    <img id="accessDeniedImage" class="any-square-img" src="@ImageService.DecodeImage(Model.accessDeniedImageData,Model.accessDeniedMimeType)" alt="Access Denied" />
+                    <img id="accessDeniedImage" class="any-square-img" src="@Model.AccessDeniedImage.ImageBase64" alt="Access Denied" />
                 </div>
             </div>
         </div>

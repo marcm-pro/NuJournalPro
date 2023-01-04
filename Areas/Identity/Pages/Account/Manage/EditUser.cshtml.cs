@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using NuJournalPro.Enums;
 using NuJournalPro.Models;
-using NuJournalPro.Models.ViewModels;
-using NuJournalPro.Services.Interfaces;
+using NuJournalPro.Models.Identity;
+using NuJournalPro.Services.Identity;
 using System.ComponentModel.DataAnnotations;
-using System.Xml.Linq;
 
 namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
 {
@@ -16,130 +16,173 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<NuJournalUser> _userManager;
         private readonly SignInManager<NuJournalUser> _signInManager;
-        private readonly ILogger<AddNewUserModel> _logger;
-        private readonly IImageService _imageService;
+        private readonly ILogger<EditUserModel> _logger;
         private readonly DefaultUserSettings _defaultUserSettings;
         private readonly DefaultGraphics _defaultGraphics;
+        private readonly UserService _userService;
 
         public EditUserModel(UserManager<NuJournalUser> userManager,
                                      SignInManager<NuJournalUser> signInManager,
-                                     ILogger<AddNewUserModel> logger,
-                                     IImageService imageService,
+                                     ILogger<EditUserModel> logger,
                                      IOptions<DefaultUserSettings> defaultUserSettings,
-                                     IOptions<DefaultGraphics> defaultGraphics)
+                                     IOptions<DefaultGraphics> defaultGraphics,
+                                     UserService userService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
-            _imageService = imageService;
             _defaultUserSettings = defaultUserSettings.Value;
             _defaultGraphics = defaultGraphics.Value;
+            _userService = userService;
         }
 
-        public string Username { get; set; }
-
-        public string UserRole { get; set; }
-
-        public byte[] accessDeniedImageData { get; set; }
-        public string accessDeniedMimeType { get; set; }
+        public CompressedImage AccessDeniedImage { get; set; }
 
         [TempData]
         public string StatusMessage { get; set; }
 
+        public string visibilityUserForm { get; set; } = "d-none";
+
+        public List<NuJournalUser> AppUserList { get; set; } = new List<NuJournalUser>();
+
+        [Display(Name = "Select a user to edit")]
+        public string SelectedUser { get; set; }
+
         [BindProperty]
-        public InputModel Input { get; set; }
+        public InputModel ExistingUserInput { get; set; }
 
-        public class InputModel
-        {
-            [Required]
-            [Display(Name = "First Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-            public string FirstName { get; set; }
-
-            [Display(Name = "Middle Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 1)]
-            public string MiddleName { get; set; }
-
-            [Required]
-            [Display(Name = "Last Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-            public string LastName { get; set; }
-
-            [Required]
-            [Display(Name = "Public Display Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-            public string DisplayName { get; set; }
-
-            [Required]
-            [EmailAddress]
-            [Display(Name = "Email / Username")]
-            public string Email { get; set; }
-
-            [Phone]
-            [Display(Name = "Phone number")]
-            public string PhoneNumber { get; set; }
-
-            [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-            [DataType(DataType.Password)]
-            [Display(Name = "Password")]
-            public string Password { get; set; }
-
-            [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-
-            public string ConfirmPassword { get; set; }
-            public byte[] ImageData { get; set; }
-            public string MimeType { get; set; }
-            public IFormFile ImageFile { get; set; }
-        }
-
-        private async Task LoadAsync(NuJournalUser user)
-        {
-            var userName = await _userManager.GetUserNameAsync(user);
-            var userRole = await _userManager.GetRolesAsync(user);
-            Username = userName;
-            UserRole = String.Join(", ", userRole); // in case the user has more than one role
-            Input = new InputModel
-            {
-                ImageData = await _imageService.EncodeImageAsync(_defaultUserSettings.Avatar),
-                MimeType = _imageService.MimeType(_defaultUserSettings.Avatar),
-            };
-        }
+        public class InputModel : UserInputModel { }
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            var activeUser = await _userManager.GetUserAsync(User);
+            if (activeUser == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            await LoadAsync(user);
+            var activeUserInfo = await LoadActiveUserAsync(activeUser);
 
-            if (UserRole.Equals("Owner") != true && UserRole.Equals("Administrator") != true)
+            ExistingUserInput = new InputModel()
+            {
+                Avatar = await _userService.GetDefaultUserAvatar()
+            };
+
+            if (activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()) != true && activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Administrator.ToString()) != true)
             {
                 accessDeniedImageData = await _imageService.EncodeImageAsync(_defaultGraphics.SecureAccess);
                 accessDeniedMimeType = _imageService.MimeType(_defaultGraphics.SecureAccess);
             }
             else
             {
-                //foreach (var appUser in _userManager.Users.ToList())
-                //{
-                //    AppUserList.Add(new AppUserList()
-                //    {
-                //        userEmail = appUser.Email,
-                //        userFullName = appUser.FullName,
-                //        userRole = String.Join(", ", await _userManager.GetRolesAsync(appUser))
-                //    });
-                //}
-                //ViewData["AppUserList"] = new SelectList(AppUserList, "userEmail");
+                if (activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()))
+                {
+                    AppUserList = _userManager.Users.Cast<NuJournalUser>()
+                                                    .Where(u => !u.UserName.Equals(activeUserInfo.UserName))
+                                                    .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Owner.ToString()))
+                                                    .OrderBy(r => r.UserRoles)
+                                                    .ToList();
 
-                //ViewData["USStatesList"] = new SelectList(Enum.GetValues(typeof(USStates)).Cast<USStates>().ToList());
+
+                    ViewData["SelectUserList"] = new SelectList(AppUserList, "UserName", "UserNameWithRoles");
+                }
+                else if (activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Administrator.ToString()) && !activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()))
+                {
+                    AppUserList = _userManager.Users.Cast<NuJournalUser>()
+                                                    .Where(u => !u.UserName.Equals(activeUserInfo.UserName))
+                                                    .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Owner.ToString()))
+                                                    .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Administrator.ToString()))
+                                                    .OrderBy(r => r.UserRoles)
+                                                    .ToList();
+
+
+                    ViewData["SelectUserList"] = new SelectList(AppUserList, "Email", "UserNameWithRoles");
+                }
+                else
+                {
+                    StatusMessage = "Access Denied: You do not have access to this resource.";
+                }
             }
 
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync(string selectedUser)
+        {
+            var activeUser = await _userManager.GetUserAsync(User);
+            if (activeUser == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            var activeUserInfo = await LoadActiveUserAsync(activeUser);
+            var selectedUserInfo = await _userManager.FindByEmailAsync(selectedUser);
+
+            ViewData["SelectUserList"] = new SelectList(LoadSelectUserList(activeUser), "Email", "UserNameWithRoles");
+
+            Input.FirstName = selectedUserInfo.FirstName;
+            Input.MiddleName = selectedUserInfo.MiddleName;
+            Input.LastName = selectedUserInfo.LastName;
+            Input.DisplayName = selectedUserInfo.DisplayName;
+            Input.Email = selectedUserInfo.Email;
+            Input.PhoneNumber = selectedUserInfo.PhoneNumber;
+            Input.ImageData = selectedUserInfo.ImageData;
+            Input.MimeType = selectedUserInfo.MimeType;
+
+            visibilityUserForm = string.Empty;
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostModifyUserAsync(InputModel input)
+        {
+            var activeUser = await _userManager.GetUserAsync(User);
+            if (activeUser == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            var activeUserInfo = await LoadActiveUserAsync(activeUser);
+
+            ViewData["SelectUserList"] = new SelectList(LoadSelectUserList(activeUser), "Email", "UserNameWithRoles");
+
+            var selectedUserInfo = await _userManager.FindByEmailAsync(input.Email);
+
+            if (ModelState.IsValid)
+            {
+                if (Input.FirstName != selectedUserInfo.FirstName || Input.MiddleName != selectedUserInfo.MiddleName || Input.LastName != selectedUserInfo.LastName || Input.DisplayName != selectedUserInfo.DisplayName)
+                {
+                    if (Input.FirstName != selectedUserInfo.FirstName) selectedUserInfo.FirstName = Input.FirstName;
+                    if (Input.MiddleName != selectedUserInfo.MiddleName) selectedUserInfo.MiddleName = Input.MiddleName;
+                    if (Input.LastName != selectedUserInfo.LastName) selectedUserInfo.LastName = Input.LastName;
+
+                    await _userManager.UpdateAsync(selectedUserInfo);
+                }
+            }
+
+            return Page();
+        }
+
+        private List<NuJournalUser> LoadSelectUserList(NuJournalUser activeUserInfo)
+        {
+            if (activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()))
+            {
+                return _userManager.Users.Cast<NuJournalUser>()
+                                         .Where(u => !u.UserName.Equals(activeUserInfo.UserName))
+                                         .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Owner.ToString()))
+                                         .OrderBy(r => r.UserRoles)
+                                         .ToList();
+            }
+            else if (!activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()) && activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Administrator.ToString()))
+            {
+                return _userManager.Users.Cast<NuJournalUser>()
+                                         .Where(u => !u.UserName.Equals(activeUserInfo.UserName))
+                                         .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Owner.ToString()))
+                                         .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Administrator.ToString()))
+                                         .OrderBy(r => r.UserRoles)
+                                         .ToList();
+            }
+            else return null;
         }
     }
 }

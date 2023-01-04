@@ -6,8 +6,8 @@ using NuJournalPro.Data;
 using NuJournalPro.Enums;
 using NuJournalPro.Models;
 using Microsoft.EntityFrameworkCore;
-using NuJournalPro.Services.Interfaces;
 using NuJournalPro.Areas.Identity.Pages.Account.Manage;
+using NuJournalPro.Services.Identity.Interfaces;
 
 namespace NuJournalPro.Services
 {
@@ -20,9 +20,8 @@ namespace NuJournalPro.Services
         private readonly IUserStore<NuJournalUser> _userStore;
         private readonly IUserEmailStore<NuJournalUser> _emailStore;
         private readonly OwnerSettings _ownerSettings;
-        private readonly IEmailSender _emailSender;
-        private readonly IImageService _imageService;
-        private readonly DefaultUserSettings _defaultUserSettings;
+        private readonly IEmailSender _emailSender;        
+        private readonly IUserService _userService;
 
         public DataService(ApplicationDbContext dbContext,
                           UserManager<NuJournalUser> userManager,
@@ -31,8 +30,7 @@ namespace NuJournalPro.Services
                           IUserStore<NuJournalUser> userStore,
                           IOptions<OwnerSettings> ownerSettings,
                           IEmailSender emailSender,
-                          IImageService imageService,
-                          IOptions<DefaultUserSettings> defaultUserSettings)
+                          IUserService userService)
         {
             _dbContext = dbContext;
             _userManager = userManager;
@@ -42,8 +40,7 @@ namespace NuJournalPro.Services
             _emailStore = GetEmailStore();
             _ownerSettings = ownerSettings.Value;
             _emailSender = emailSender;
-            _imageService = imageService;
-            _defaultUserSettings = defaultUserSettings.Value;
+            _userService = userService;
         }
 
         public async Task ManageDataAsync()
@@ -133,13 +130,12 @@ namespace NuJournalPro.Services
                     MiddleName = _ownerSettings.MiddleName ?? Environment.GetEnvironmentVariable("MiddleName"),
                     LastName = _ownerSettings.LastName ?? Environment.GetEnvironmentVariable("LastName"),
                     DisplayName = _ownerSettings.DisplayName ?? Environment.GetEnvironmentVariable("DisplayName"),
-                    ImageData = await _imageService.EncodeImageAsync(_defaultUserSettings.Avatar),
-                    MimeType = _imageService.MimeType(_defaultUserSettings.Avatar),
+                    Avatar = await _userService.GetDefaultUserAvatar(),
                     CreatedByUser = "Data Service",
                     EmailConfirmed = true
                 };
 
-                var ownerPassword = GenerateRandomPassword();
+                var ownerPassword = _userService.GenerateRandomPassword();
 
                 await _userStore.SetUserNameAsync(ownerAccount, ownerAccount.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(ownerAccount, ownerAccount.Email, CancellationToken.None);
@@ -173,46 +169,6 @@ namespace NuJournalPro.Services
                 _logger.LogError(ownerCreationLogError);
                 Console.WriteLine(ownerCreationLogError);
             }
-            
-        }
-
-        private string GenerateRandomPassword(PasswordOptions pwdOptions = null)
-        {
-            if (pwdOptions == null)
-            {
-                pwdOptions = new PasswordOptions()
-                {
-                    RequiredLength = 16,
-                    RequiredUniqueChars = 4,
-                    RequireDigit = true,
-                    RequireLowercase = true,
-                    RequireNonAlphanumeric = true,
-                    RequireUppercase = true
-                };
-            }
-
-            string[] characterPool = new[] {
-                "ABCDEFGHJKLMNOPQRSTUVWXYZ",
-                "abcdefghijkmnopqrstuvwxyz",
-                "0123456789",
-                "!@$?_-"
-            };
-
-            Random rand = new Random(Environment.TickCount);
-            List<char> chars = new List<char>();
-
-            if (pwdOptions.RequireUppercase) chars.Insert(rand.Next(0, chars.Count), characterPool[0][rand.Next(0, characterPool[0].Length)]);
-            if (pwdOptions.RequireLowercase) chars.Insert(rand.Next(0, chars.Count), characterPool[1][rand.Next(0, characterPool[1].Length)]);
-            if (pwdOptions.RequireDigit) chars.Insert(rand.Next(0, chars.Count), characterPool[2][rand.Next(0, characterPool[2].Length)]);
-            if (pwdOptions.RequireNonAlphanumeric) chars.Insert(rand.Next(0, chars.Count), characterPool[3][rand.Next(0, characterPool[3].Length)]);
-
-            for (int i = chars.Count; i < pwdOptions.RequiredLength || chars.Distinct().Count() < pwdOptions.RequiredUniqueChars; i++)
-            {
-                string rcs = characterPool[rand.Next(0, characterPool.Length)];
-                chars.Insert(rand.Next(0, chars.Count), rcs[rand.Next(0, rcs.Length)]);
-            }
-
-            return new string(chars.ToArray());
         }
 
         private IUserEmailStore<NuJournalUser> GetEmailStore()

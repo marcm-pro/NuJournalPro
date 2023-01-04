@@ -1,4 +1,5 @@
 #nullable disable
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -7,8 +8,8 @@ using Microsoft.Extensions.Options;
 using NuJournalPro.Enums;
 using NuJournalPro.Models;
 using NuJournalPro.Services.Interfaces;
-using System.Linq;
-using System.Threading.Tasks.Dataflow;
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 
 namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
 {
@@ -36,9 +37,12 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
 
         public List<NuJournalUser> AppUserList { get; set; } = new List<NuJournalUser>();
 
-        public NuJournalUser SelectedUser { get; set; }
+        [Display(Name = "Select a user to delete")]
+        public string SelectedUser { get; set; }
 
-        public string ConfirmEmail { get; set; }
+        [Display(Name = "Confirm user deletion by entering the user's email address")]
+        [Required]
+        public string ConfirmUserName { get; set; }
 
         public byte[] AccessDeniedImageData { get; set; }
         public string AccessDeniedMimeType { get; set; }
@@ -59,11 +63,11 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
                 }
             }
         }
-
+        
         public async Task<IActionResult> OnGetAsync()
         {
             var activeUser = await _userManager.GetUserAsync(User);
-            
+
             if (activeUser == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
@@ -72,7 +76,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             var activeUserInfo = await LoadActiveUserAsync(activeUser);
 
             if (!activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()) && !activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Administrator.ToString()))
-            { 
+            {
                 AccessDeniedImageData = await _imageService.EncodeImageAsync(_defaultGraphics.SecureAccess);
                 AccessDeniedMimeType = _imageService.MimeType(_defaultGraphics.SecureAccess);
             }
@@ -80,46 +84,73 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
             {
                 if (activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()))
                 {
-                    var appUserList = _userManager.Users.Cast<NuJournalUser>()
-                                                        .Where(u => !u.UserName.Equals(activeUserInfo.UserName))
-                                                        .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Owner.ToString()))
-                                                        .OrderBy(r => r.UserRoles)
-                                                        .ToList();
+                    AppUserList = _userManager.Users.Cast<NuJournalUser>()
+                                                    .Where(u => !u.UserName.Equals(activeUserInfo.UserName))
+                                                    .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Owner.ToString()))
+                                                    .OrderBy(r => r.UserRoles)
+                                                    .ToList();
 
-                    if (appUserList.Count == 0)
+                    if (AppUserList.Count == 0)
                     {
                         StatusMessage = "There are no users to delete.";
                         return Page();
                     }
 
-                    ViewData["SelectUserList"] = new SelectList(appUserList, "UserName", "UserNameWithRoles");
+                    ViewData["SelectUserList"] = new SelectList(AppUserList, "UserName", "UserNameWithRoles");
 
                 }
-                else if (activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Administrator.ToString()))
+                else if (activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Administrator.ToString()) && !activeUserInfo.UserRolesString.Contains(NuJournalUserRole.Owner.ToString()))
                 {
-                    var appUserList = _userManager.Users.Cast<NuJournalUser>()
-                                                        .Where(u => !u.UserName.Equals(activeUserInfo.UserName))
-                                                        .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Owner.ToString()))
-                                                        .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Administrator.ToString()))
-                                                        .OrderBy(r => r.UserRoles)
-                                                        .ToList();
+                    AppUserList = _userManager.Users.Cast<NuJournalUser>()
+                                                    .Where(u => !u.UserName.Equals(activeUserInfo.UserName))
+                                                    .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Owner.ToString()))
+                                                    .Where(u => !u.UserRoles.Contains(NuJournalUserRole.Administrator.ToString()))
+                                                    .OrderBy(r => r.UserRoles)
+                                                    .ToList();
 
-                    if (appUserList.Count == 0)
+                    if (AppUserList.Count == 0)
                     {
                         StatusMessage = "There are no users to delete.";
                         return Page();
                     }
 
-                    ViewData["SelectUserList"] = new SelectList(appUserList, "UserName", "UserNameWithRoles");
+                    SelectedUser = AppUserList[0].UserNameWithRoles;
+                    ViewData["SelectUserList"] = new SelectList(AppUserList, "Email", "UserNameWithRoles");
                 }
                 else
                 {
-                    //ViewData["SelectUserList"] = new SelectList();
+                    StatusMessage = "Access Denied: You do not have access to this resource.";                    
                 }
 
             }
-            
 
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync(string selectedUser, string confirmUserName)
+        {
+            if (ModelState.IsValid)
+            {
+                var activeUser = await _userManager.GetUserAsync(User);
+                if (activeUser == null)
+                {
+                    return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                }
+
+                var activeUserInfo = await LoadActiveUserAsync(activeUser);
+
+                if (selectedUser.Contains(confirmUserName))
+                {
+                    var deleteUser = await _userManager.FindByEmailAsync(selectedUser);
+                    var userDeleteResult = await _userManager.DeleteAsync(deleteUser);
+
+                    if (userDeleteResult.Succeeded)
+                    {
+                        _logger.LogInformation($"User {selectedUser} was deleted by {activeUser.UserName}.");
+                        StatusMessage = $"User {selectedUser} was deleted by {activeUser.UserName}.";
+                    }
+                }
+            }
 
             return Page();
         }

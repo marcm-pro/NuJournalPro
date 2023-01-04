@@ -1,17 +1,16 @@
 #nullable disable
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using NuJournalPro.Enums;
 using NuJournalPro.Models;
-using NuJournalPro.Models.ViewModels;
+using NuJournalPro.Models.Identity;
+using NuJournalPro.Services.Identity.Interfaces;
 using NuJournalPro.Services.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
 {
@@ -20,32 +19,31 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<NuJournalUser> _userManager;
         private readonly SignInManager<NuJournalUser> _signInManager;
         private readonly ILogger<AddNewUserModel> _logger;
-        private readonly IImageService _imageService;
         private readonly DefaultUserSettings _defaultUserSettings;
         private readonly DefaultGraphics _defaultGraphics;
         private readonly IUserEmailStore<NuJournalUser> _newUserEmailStore;
         private readonly IUserStore<NuJournalUser> _newUserStore;
+        private readonly IUserService _userService;
 
         public AddNewUserModel(UserManager<NuJournalUser> userManager,
                                SignInManager<NuJournalUser> signInManager,
                                ILogger<AddNewUserModel> logger,
-                               IImageService imageService,
                                IOptions<DefaultUserSettings> defaultUserSettings,
                                IOptions<DefaultGraphics> defaultGraphics,
-                               IUserStore<NuJournalUser> newUserStore)
+                               IUserStore<NuJournalUser> newUserStore,
+                               IUserService userService)
         {
             _userManager = userManager;
             _logger = logger;
-            _imageService = imageService;
             _defaultUserSettings = defaultUserSettings.Value;
             _signInManager = signInManager;
             _defaultGraphics = defaultGraphics.Value;
             _newUserStore = newUserStore;
             _newUserEmailStore = GetEmailStore();
+            _userService = userService;
         }
 
-        public byte[] AccessDeniedImageData { get; set; }
-        public string AccessDeniedMimeType { get; set; }
+        public CompressedImage AccessDeniedImage { get; set; }
 
         [Display(Name = "Select User Role")]
         public NuJournalUserRole NewUserRole { get; set; }
@@ -56,68 +54,7 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
         [BindProperty]
         public InputModel NewUserInput { get; set; }
 
-        public class InputModel
-        {
-            [Required]
-            [Display(Name = "First Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-            public string FirstName { get; set; }
-
-            [Display(Name = "Middle Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 1)]
-            public string MiddleName { get; set; }
-
-            [Required]
-            [Display(Name = "Last Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-            public string LastName { get; set; }
-
-            [Required]
-            [Display(Name = "Public Display Name")]
-            [StringLength(128, ErrorMessage = "The {0} ust be at least {2} and no more than {1} characters long.", MinimumLength = 2)]
-            public string DisplayName { get; set; }
-
-            [Required]
-            [EmailAddress]
-            [Display(Name = "Email / Username")]
-            public string Email { get; set; }
-
-            [Phone]
-            [Display(Name = "Phone number")]
-            public string PhoneNumber { get; set; }
-
-            [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-            [DataType(DataType.Password)]
-            [Display(Name = "Password")]
-            public string Password { get; set; }
-
-            [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-            public string ConfirmPassword { get; set; }
-
-            public byte[] ImageData { get; set; }
-            public string MimeType { get; set; }
-            public IFormFile ImageFile { get; set; }
-        }
-
-        private class ActiveUserInfo
-        {
-            public ActiveUserInfo()
-            {
-            }
-
-            public string UserName { get; set; }
-            public List<string> UserRoles { get; set; } = new List<string>();            
-            public string UserRolesString
-            { 
-                get
-                {
-                    return string.Join(", ", UserRoles);
-                }
-            }
-        }
+        public class InputModel : UserInputModel { }
         
         public async Task<IActionResult> OnGetAsync()
         {
@@ -127,19 +64,19 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            var activeUserInfo = await LoadActiveUserAsync(activeUser);
+            var activeUserInfo = await _userService.GetUserInfoAsync(activeUser);
 
-            if (activeUserInfo.UserRolesString.Equals("Owner") != true && activeUserInfo.UserRolesString.Equals("Administrator") != true)
+            if (!_userService.IsOwner(activeUser) && !_userService.IsAdmin(activeUser))
             {
-                AccessDeniedImageData = await _imageService.EncodeImageAsync(_defaultGraphics.SecureAccess);
-                AccessDeniedMimeType = _imageService.MimeType(_defaultGraphics.SecureAccess);
+
             }
+
+            if (activeUserInfo.UserRolesString.Equals("Owner") != true && activeUserInfo.UserRolesString.Equals("Administrator") != true) AccessDeniedImage = await _userService.GetAccessDeniedImage();
             else
             {
                 NewUserInput = new InputModel()
                 {
-                    ImageData = await _imageService.EncodeImageAsync(_defaultUserSettings.Avatar),
-                    MimeType = _imageService.MimeType(_defaultUserSettings.Avatar)
+                    Avatar = await _userService.GetDefaultUserAvatar()
                 };
 
                 if (activeUserInfo.UserRolesString.Equals("Owner"))
@@ -179,9 +116,9 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
                     return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
                 }
 
-                var activeUserInfo = await LoadActiveUserAsync(activeUser);
+                var activeUserInfo = await _userService.GetUserInfoAsync(activeUser);
 
-                var newUser = await CreateNewUser(activeUserInfo, NewUserInput.ImageFile);
+                var newUser = await _userService.CreateNewUserAsync(NewUserInput, activeUserInfo, NewUserInput.ImageFile);
 
                 if (activeUserInfo.UserRolesString.Contains("Owner") != true && activeUserInfo.UserRolesString.Contains("Administrator") == true)
                 {
@@ -234,49 +171,6 @@ namespace NuJournalPro.Areas.Identity.Pages.Account.Manage
 
             // If we got this far, something failed, redisplay the new user registration form.
             return Page();
-        }
-
-        private async Task<ActiveUserInfo> LoadActiveUserAsync(NuJournalUser activeUser)
-        {
-            return new ActiveUserInfo()
-            {
-                UserName = await _userManager.GetUserNameAsync(activeUser),
-                UserRoles = await _userManager.GetRolesAsync(activeUser) as List<string>
-            };
-        }
-
-        private async Task<NuJournalUser> CreateNewUser(ActiveUserInfo activeUserInfo, IFormFile newUserImageFile)
-        {
-            try
-            {
-                NuJournalUser newUser = Activator.CreateInstance<NuJournalUser>();
-                newUser.UserName = NewUserInput.Email;
-                newUser.Email = NewUserInput.Email;
-                newUser.FirstName = NewUserInput.FirstName;
-                newUser.MiddleName = NewUserInput.MiddleName;
-                newUser.LastName = NewUserInput.LastName;
-                newUser.DisplayName = NewUserInput.DisplayName;
-                newUser.PhoneNumber = NewUserInput.PhoneNumber;
-                newUser.CreatedByUser = activeUserInfo.UserName;
-                newUser.CreatedByRoles = activeUserInfo.UserRoles;
-                if (newUserImageFile == null)
-                {
-                    newUser.ImageData = await _imageService.EncodeImageAsync(_defaultUserSettings.Avatar);
-                    newUser.MimeType = _imageService.MimeType(_defaultUserSettings.Avatar);
-                }
-                else
-                {
-                    newUser.ImageData = await _imageService.EncodeImageAsync(newUserImageFile);
-                    newUser.MimeType = _imageService.MimeType(newUserImageFile);
-                }
-                newUser.EmailConfirmed = true;
-                return newUser;
-            }
-            catch
-            {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(NuJournalUser)}'. " +
-                    $"Ensure that '{nameof(NuJournalUser)}' is not an abstract class and has a parameterless constructor.");
-            }
         }
 
         private IUserEmailStore<NuJournalUser> GetEmailStore()
